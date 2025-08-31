@@ -1,0 +1,76 @@
+# NekoX插件配置文件
+
+# 猫娘聊天功能设置
+neko-chat:
+  enabled: true
+  # 聊天前缀
+  prefix: "§6[猫娘] §f"
+  # 聊天后缀
+  suffix: " §6喵~"
+
+# 只吃肉类设置
+meat-only:
+  enabled: true
+  # 允许食用的肉类列表
+  allowed-foods:
+    - "COOKED_BEEF"
+    - "BEEF"
+    - "COOKED_CHICKEN"
+    - "CHICKEN"
+    - "COOKED_PORKCHOP"
+    - "PORKCHOP"
+    - "COOKED_MUTTON"
+    - "MUTTON"
+    - "RABBIT"
+    - "COOKED_RABBIT"
+    - "COD"
+    - "COOKED_COD"
+    - "SALMON"
+    - "COOKED_SALMON"
+    - "TROPICAL_FISH"
+    - "PUFFERFISH"
+    - "BREAD"
+    - "CAKE"
+    - "COOKIE"
+    - "MILK_BUCKET"
+
+# 猫薄荷设置
+cat-nip:
+  enabled: true
+  # 猫薄荷物品ID
+  item: "WHEAT_SEEDS"
+  # 效果持续时间(秒)
+  duration: 60
+
+# 猫爪设置
+claws:
+  enabled: true
+  # 猫爪伤害加成
+  damage-bonus: 2.0
+  # 冷却时间(秒)
+  cooldown: 10
+
+# 生物目标设置
+mob-targeting:
+  enabled: true
+  # 敌对生物目标距离增加
+  distance-increase: 2.0
+  # 友好生物更亲近
+  friendly-attraction: true
+
+# 护甲加成设置
+armor-bonus:
+  enabled: true
+  # 皮革护甲加成
+  leather-bonus:
+    - "LEATHER_HELMET"
+    - "LEATHER_CHESTPLATE"
+    - "LEATHER_LEGGINGS"
+    - "LEATHER_BOOTS"
+  # 每穿一件皮革护甲获得的速度加成
+  speed-bonus-per-piece: 0.03
+
+# 命令设置
+commands:
+  # 是否启用所有命令
+  enabled: true
