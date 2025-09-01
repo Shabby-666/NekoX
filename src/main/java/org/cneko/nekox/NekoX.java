@@ -4,11 +4,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cneko.nekox.commands.*;
 import org.cneko.nekox.events.*;
+import org.cneko.nekox.events.NightEffectsListener;
 import org.cneko.nekox.utils.NekoManager;
 
 public class NekoX extends JavaPlugin {
     private static NekoX instance;
     private NekoManager nekoManager;
+    private NightEffectsListener nightEffectsListener;
     
     @Override
     public void onEnable() {
@@ -37,6 +39,11 @@ public class NekoX extends JavaPlugin {
         // 保存配置
         saveConfig();
         
+        // 取消夜间效果任务
+        if (nightEffectsListener != null) {
+            nightEffectsListener.cancelTask();
+        }
+        
         getLogger().info("NekoX插件已成功禁用！再见~♪");
     }
     
@@ -47,6 +54,9 @@ public class NekoX extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Claws(), this);
         Bukkit.getPluginManager().registerEvents(new MobTargetEvent(), this);
         Bukkit.getPluginManager().registerEvents(new ArmorEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new OwnerDeathListener(), this);
+        nightEffectsListener = new NightEffectsListener();
+        Bukkit.getPluginManager().registerEvents(nightEffectsListener, this);
     }
     
     private void registerCommands() {
@@ -63,11 +73,13 @@ public class NekoX extends JavaPlugin {
         getCommand("nekox").setExecutor(new NekoXCommand(this));
         getCommand("nekoxhelp").setExecutor(new NekoXHelp());
         getCommand("nekoset").setExecutor(new NekoSetCommand(this));
+        getCommand("owner").setExecutor(new OwnerCommand(this));
+        getCommand("health").setExecutor(new HealthCommand(this));
     }
     
     private void initStats() {
         // 初始化bStats统计
-        int pluginId = 12345; // 替换为实际的插件ID
+        int pluginId = 27133; // NekoX插件的实际ID
         new org.bstats.bukkit.Metrics(this, pluginId);
     }
     

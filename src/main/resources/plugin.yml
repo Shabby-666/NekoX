@@ -1,6 +1,6 @@
-name: NekoX
-version: 1.0.0
-authors: [CNeko]
+name: NekoX-Plugin
+version: 2.0-RELEASE
+authors: [_Chinese_Player_]
 description: 一个融合了NekoC和toNeko功能的猫娘插件
 main: org.cneko.nekox.NekoX
 api-version: 1.21
@@ -46,6 +46,10 @@ commands:
     description: 获得迅捷潜行效果
     usage: /<command> [玩家]
     permission: nekox.swiftsneak
+  health:
+    description: 猫娘恢复自己和主人的生命值
+    usage: /<command>
+    permission: nekox.health
   nekox:
     description: NekoX主命令
     usage: /<command> <reload/version>
@@ -58,6 +62,10 @@ commands:
     description: 设置/取消设置玩家为猫娘
     usage: /<command> <玩家> <true/false>
     permission: nekox.admin
+  owner:
+    description: 主人系统命令
+    usage: /<command> <add/remove/list/mylist/help> [玩家]
+    permission: nekox.owner
 
 permissions:
   nekox.pat:
@@ -80,9 +88,13 @@ permissions:
     default: true
   nekox.swiftsneak:
     default: true
+  nekox.health:
+    default: true
   nekox.help:
     default: true
   nekox.admin:
     default: op
     children:
       nekox.help: true
+  nekox.owner:
+    default: true

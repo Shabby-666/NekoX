@@ -24,10 +24,11 @@ public class NekoXHelp implements CommandExecutor {
         sender.sendMessage("§e/attention <玩家> - 吸引另一个玩家的注意");
         
         // 效果命令
-        sender.sendMessage("§a===== 效果命令 =====");
+        sender.sendMessage("§a===== 效果命令 ======");
         sender.sendMessage("§e/nightvision [玩家] - 获得夜视效果(默认自己)");
         sender.sendMessage("§e/jumpboost [玩家] - 获得跳跃提升效果(默认自己)");
         sender.sendMessage("§e/swiftsneak [玩家] - 获得迅捷潜行效果(默认自己)");
+        sender.sendMessage("§e/health - 猫娘恢复自己和主人的生命值(随生命值降低提升效果)");
         
         // 管理命令
         sender.sendMessage("§a===== 管理命令 =====");
@@ -35,6 +36,16 @@ public class NekoXHelp implements CommandExecutor {
         sender.sendMessage("§e/nekox reload - 重新加载插件配置(需要管理员权限)");
         sender.sendMessage("§e/nekox version - 查看插件版本");
         sender.sendMessage("§e/nekoset <玩家> <true/false> - 设置玩家的猫娘状态(需要管理员权限)");
+        
+        // 主人系统命令
+        sender.sendMessage("§a===== 主人系统命令 =====");
+        sender.sendMessage("§e/owner add <玩家> - 向指定猫娘玩家发送主人申请");
+        sender.sendMessage("§e/owner accept <玩家> - 接受指定玩家的主人申请");
+        sender.sendMessage("§e/owner deny <玩家> - 拒绝指定玩家的主人申请");
+        sender.sendMessage("§e/owner forceadd <玩家> - 无需猫娘同意直接成为其主人(管理员专用)");
+        sender.sendMessage("§e/owner remove <玩家> - 移除与指定猫娘玩家的主人关系");
+        sender.sendMessage("§e/owner list - 查看你(作为猫娘)的所有主人");
+        sender.sendMessage("§e/owner mylist - 查看你拥有的所有猫娘");
         
         // 提示信息
         if (sender instanceof Player) {
