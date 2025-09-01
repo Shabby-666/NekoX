@@ -11,7 +11,7 @@
 ### Introduction
 NekoX is a Minecraft plugin that transforms players into cute neko girls (cat girls) with special abilities and interactions. This plugin combines features from NekoC and toNeko plugins, creating a comprehensive neko experience for your Minecraft server.
 
-["Version Update(2.0-RELEASE)"](https://github.com/Shabby-666/NekoX/tree/2.0-RELEASE)
+[Version Update(2.0-RELEASE)](https://github.com/Shabby-666/NekoX/tree/2.0-RELEASE)
 
 Original plugin repositories:
 - toNeko: https://modrinth.com/plugin/toneko
@@ -115,7 +115,7 @@ The plugin integrates with bStats to help developers understand plugin usage.
 ### 介绍
 NekoX是一个Minecraft插件，它可以将玩家转变为可爱的猫娘，并赋予她们特殊的能力和互动方式。这个插件融合了NekoC和toNeko插件的功能，为您的Minecraft服务器创造一个全面的猫娘体验。
 
-["版本更新（2.0-RELEASE）"](https://github.com/Shabby-666/NekoX/tree/2.0-RELEASE)
+[版本更新（2.0-RELEASE）](https://github.com/Shabby-666/NekoX/tree/2.0-RELEASE)
 
 原始插件链接：
 - toNeko: https://modrinth.com/plugin/toneko
