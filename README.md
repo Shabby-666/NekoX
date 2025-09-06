@@ -1,6 +1,6 @@
 # NekoX
 
-## Table of Contents
+## 目录
 - [English](#english)
 - [中文](#中文)
 
@@ -8,268 +8,232 @@
 
 ## English
 
-### Introduction
-NekoX is a Minecraft plugin that transforms players into cute neko girls (cat girls) with special abilities and interactions. This plugin combines features from NekoC and toNeko plugins, creating a comprehensive neko experience for your Minecraft server.
+### What is NekoX?
+NekoX is a fun Minecraft plugin that lets players become cute cat girls (nekos) with special abilities and ways to interact with others. It combines features from the NekoC and toNeko plugins to create a complete cat girl experience for your server.
 
-Original plugin repositories:
+Original plugin creators:
 - toNeko: https://modrinth.com/plugin/toneko
 - NekoC: https://modrinth.com/plugin/nekoc
 
-### Version Compatibility
-This plugin supports two versions of Paper API through Maven profiles:
-- Default: Paper 1.20.4 (using Java 17)
-- Optional: Paper 1.21.4 (requires Java 21)
+### Which Minecraft Versions Does It Work With?
+This plugin works with two versions of Minecraft:
+- Default: Minecraft 1.20.4 (runs on Java 17)
+- Optional: Minecraft 1.21.4 (needs Java 21)
 
-### How to Compile
+### How to Compile (For Server Owners Who Want to Build It Themselves)
+If you want to create the plugin file yourself, follow these simple steps:
 
-#### Compile for 1.20.4 (Default)
+#### For Minecraft 1.20.4 (Default)
+Open the command line and type:
 ```bash
 mvn clean install
 ```
 
-#### Compile for 1.21.4
-**Note: You need to have Java 21 installed to compile the 1.21.4 version**
+#### For Minecraft 1.21.4
+**Important: You need to have Java 21 installed on your computer first**
+Open the command line and type:
 ```bash
 mvn clean install -Ppaper-1.21.4
 ```
 
-### Current System Limitations
-The current system is using Java 17, which cannot directly compile the 1.21.4 version. If you need to compile the 1.21.4 version, please install Java 21 first.
+### Current Limitation
+If your computer is using Java 17, you can only make the 1.20.4 version. To make the 1.21.4 version, you'll need to install Java 21 first.
 
-### Features
-- Multiple neko-related commands
-- Neko-themed event handlers
-- Catnip effects
-- Special abilities like jump boost, night vision, and swift sneak
-- Neko chat with cute prefixes and suffixes
-- Meat-only diet system
-- Claw attack system
-- Armor bonuses for leather armor
-- Mob targeting adjustments
-- Owner system for nekos to have owners and additional interactions
-- Health restore skill for nekos to heal themselves and their owners
-- Automatic night enhancements for nekos (night vision, speed, jump boost)
-- Owner-death system where nekos die when their owner dies
-- bStats integration for usage statistics
+### What Can NekoX Do?
+- Let players become cat girls with special abilities
+- Add cute cat-themed interactions between players
+- Give cat girls special powers like seeing in the dark, jumping higher, and moving quietly
+- Make cat girls chat with cute messages (with special prefixes and suffixes)
+- Create a special diet system where cat girls can only eat meat
+- Add claw attacks for cat girls
+- Give bonuses when cat girls wear leather armor
+- Change how monsters target cat girls
+- Let cat girls have owners and enjoy special interactions
+- Let cat girls heal themselves and their owners with a special health skill
+- Give cat girls stronger abilities at night (that get even better near midnight)
+- Optional feature: Make cat girls die when their owner dies
+- Track anonymous usage data to help improve the plugin
 
-### Command List
+### How to Use NekoX Commands
+Here are all the commands you can use in the game:
 
-#### Interaction Commands
-- `/pat <player>` - Gently pat another player
-- `/lovebite <player>` - Give another player a loving bite
-- `/earscratch <player>` - Gently scratch another player's ears
-- `/purr` - Make a comfortable purring sound
-- `/hiss <player>` - Hiss at another player
-- `/scratch <player>` - Scratch another player with claws
-- `/attention <player>` - Attract another player's attention
+#### Fun Interaction Commands
+- `/pat <player>` - Gently pat someone
+- `/lovebite <player>` - Give someone a playful bite
+- `/earscratch <player>` - Scratch someone's ears gently
+- `/purr` - Make a happy purring sound
+- `/hiss <player>` - Hiss at someone playfully
+- `/scratch <player>` - Scratch someone with your claws
+- `/attention <player>` - Get someone's attention
 
-#### Effect Commands
-- `/nightvision [player]` - Get night vision effect (defaults to self)
-- `/jumpboost [player]` - Get jump boost effect (defaults to self)
-- `/swiftsneak [player]` - Get swift sneak effect (defaults to self)
-- `/health` - Neko-only skill to restore health for themselves and their owners (requires food and has cooldown)
+#### Ability Commands
+- `/nightvision [player]` - Get the ability to see in the dark (works on yourself or someone else)
+- `/jumpboost [player]` - Jump higher than normal (works on yourself or someone else)
+- `/swiftsneak [player]` - Move quietly and quickly while sneaking (works on yourself or someone else)
+- `/health` - (Only for cat girls) Heal yourself and your owner, but it uses hunger and you can't use it too often
 
 #### Owner System Commands
-- `/owner <subcommand>` - Manage owner relationships and interactions
-  - `/owner add <player>` - Send a request to become the owner of a neko player
-  - `/owner accept <player>` - Accept an owner request from a player
-  - `/owner deny <player>` - Deny an owner request from a player
-  - `/owner forceadd <player>` - Become an owner without consent (admin only)
-  - `/owner remove <player>` - Remove owner relationship with a player (both nekos and owners can use this)
-  - `/owner list` - View all your owners (as a neko)
-  - `/owner mylist` - View all nekos you own
+- `/owner <subcommand>` - Manage your owner relationships
+  - `/owner add <player>` - Ask to become someone's owner
+  - `/owner accept <player>` - Accept an owner request from someone
+  - `/owner deny <player>` - Say no to an owner request from someone
+  - `/owner forceadd <player>` - Become someone's owner without asking (only for admins)
+  - `/owner remove <player>` - End an owner relationship (both cat girls and owners can use this)
+  - `/owner list` - See all your owners (if you're a cat girl)
+  - `/owner mylist` - See all the cat girls you own
 
-#### Management Commands
-- `/nekox` - View plugin information
-- `/nekox reload` - Reload plugin configuration (requires admin permission)
-- `/nekox version` - View plugin version
-- `/nekoset <player> <true/false>` - Set a player's neko status (requires admin permission)
-- `/nekoxhelp` - View help information
+#### Admin Commands
+- `/nekox` - See information about the plugin
+- `/nekox reload` - Update the plugin settings without restarting the server (admins only)
+- `/nekox version` - See which version of the plugin you're using
+- `/nekoset <player> <true/false>` - Turn someone into a cat girl or back (admins only)
+- `/nekoxhelp` - See this list of commands
 
-### Configuration File
-The plugin will generate a `config.yml` file after the first run, which you can configure according to your needs.
+### How to Change Plugin Settings
+The first time you run the plugin, it will create a `config.yml` file. You can open this file with Notepad to change how the plugin works.
 
-Key configuration options:
-- `neko-chat` - Enable/disable special chat formatting for neko players
-- `meat-only` - Restrict neko players to only eat meat and certain other foods
-- `cat-nip` - Configure catnip item and effects
-- `claws` - Configure claw attack damage and cooldown
-- `mob-targeting` - Adjust how mobs target neko players
-- `armor-bonus` - Configure speed bonuses for wearing leather armor
-- `owner-system` - Enable/disable the owner system functionality
-- `health-skill` - Configure the health restore skill (cooldown, hunger cost, max level)
-- `night-effects` - Configure automatic night enhancements (enabled, check interval, start/end/peak times, max level)
-- `owner-death` - Configure owner-death system (enabled, keep inventory, keep level)
+Here are the most important settings you can change:
+- `neko-chat` - Turn special cat girl chat messages on or off
+- `meat-only` - Make cat girls only able to eat meat
+- `cat-nip` - Change how catnip works
+- `claws` - Adjust how much damage claw attacks do and how often you can use them
+- `mob-targeting` - Change how monsters react to cat girls
+- `armor-bonus` - Make leather armor give cat girls more speed
+- `owner-system` - Turn the owner system on or off
+- `health-skill` - Change how the /health command works (how often you can use it, how much hunger it uses)
+- `night-effects` - Adjust the special night abilities (when they start, how strong they are)
+- `owner-death` - Choose if cat girls should die when their owner dies, and if they keep their items/levels
 
-### Permission System
-The plugin includes a complete permission node system that can be managed through permission plugins.
+### How Permissions Work
+The plugin uses a permission system to control who can use which commands. Most commands are available to everyone by default, but some (like admin commands) are only for server owners.
 
-Key permissions:
-- `nekox.pat` - Allows using the /pat command (default: true)
-- `nekox.lovebite` - Allows using the /lovebite command (default: true)
-- `nekox.earscratch` - Allows using the /earscratch command (default: true)
-- `nekox.purr` - Allows using the /purr command (default: true)
-- `nekox.hiss` - Allows using the /hiss command (default: true)
-- `nekox.scratch` - Allows using the /scratch command (default: true)
-- `nekox.attention` - Allows using the /attention command (default: true)
-- `nekox.nightvision` - Allows using the /nightvision command (default: true)
-- `nekox.jumpboost` - Allows using the /jumpboost command (default: true)
-- `nekox.swiftsneak` - Allows using the /swiftsneak command (default: true)
-- `nekox.health` - Allows using the /health command (default: true for nekos)
-- `nekox.help` - Allows using the /nekoxhelp command (default: true)
-- `nekox.admin` - Allows using admin commands (default: op)
-- `nekox.owner` - Allows using the /owner command (default: true)
-- `nekox.owner.set` - Allows setting an owner (default: true)
-- `nekox.owner.remove` - Allows removing an owner (default: true)
-- `nekox.owner.list` - Allows listing owner relationships (default: true)
-- `nekox.owner.info` - Allows viewing owner information (default: true)
-
-### Statistics
-The plugin integrates with bStats to help developers understand plugin usage.
+### How to See How Many People Use NekoX
+The plugin uses bStats to track how many servers use it. This data is completely anonymous and helps the developers make the plugin better.
 
 [![bStats](https://bstats.org/signatures/bukkit/NekoX-Plugin.svg)](https://bstats.org/plugin/bukkit/NekoX-Plugin/27133)
 
-### Notes
-- Neko player data is stored in `nekos.json` in the plugin data folder
-- Only players set as nekos (using /nekoset command) will have access to neko-exclusive commands and features
-- Neko players will have special chat formatting with prefixes and suffixes
-- The owner system allows nekos to form special bonds with other players, unlocking additional interactions
-- At night, nekos automatically receive enhanced abilities (night vision, speed, jump boost) that increase in strength towards midnight
-- Nekos can use the /health command to restore health for themselves and their owners, but it consumes hunger and has a cooldown
-- If enabled, when an owner dies, all their nekos will also die
-- All bStats data is anonymous and helps developers improve the plugin
+### Important Things to Know
+- Cat girl player information is saved in a file called `nekos.json` in the plugin's folder
+- Only players who are set as cat girls (using the /nekoset command) can use cat girl features
+- Cat girls have special chat messages with cute additions
+- The owner system lets cat girls form special bonds with other players
+- At night, cat girls automatically get better at seeing in the dark, moving faster, and jumping higher
+- Cat girls can use /health to heal themselves and their owners, but it uses their food and can't be used too often
+- If the owner-death feature is turned on, all cat girls will die when their owner dies
 
 ---
 
 ## 中文
 
-### 介绍
-NekoX是一个Minecraft插件，它可以将玩家转变为可爱的猫娘，并赋予她们特殊的能力和互动方式。这个插件融合了NekoC和toNeko插件的功能，为您的Minecraft服务器创造一个全面的猫娘体验。
+### NekoX是什么？
+NekoX是一个有趣的Minecraft插件，它可以让玩家变成可爱的猫娘，并拥有特殊能力和与其他玩家互动的方式。这个插件融合了NekoC和toNeko插件的功能，为您的服务器创造一个完整的猫娘体验。
 
-原始插件仓库：
+原始插件作者：
 - toNeko: https://modrinth.com/plugin/toneko
 - NekoC: https://modrinth.com/plugin/nekoc
 
-### 版本兼容性
-这个插件通过Maven profiles支持两个版本的Paper API：
-- 默认：Paper 1.20.4（使用Java 17）
-- 可选：Paper 1.21.4（需要Java 21）
+### 支持哪些Minecraft版本？
+这个插件支持两个版本的Minecraft：
+- 默认：Minecraft 1.20.4（运行在Java 17上）
+- 可选：Minecraft 1.21.4（需要Java 21）
 
-### 如何编译
+### 如何自己编译插件（适合想自己构建插件的服务器管理员）
+如果您想自己创建插件文件，请按照以下简单步骤操作：
 
-#### 编译1.20.4版本（默认）
+#### 对于Minecraft 1.20.4（默认）
+打开命令行并输入：
 ```bash
 mvn clean install
 ```
 
-#### 编译1.21.4版本
-**注意：需要安装Java 21才能编译1.21.4版本**
+#### 对于Minecraft 1.21.4
+**重要提示：您需要先在电脑上安装Java 21**
+打开命令行并输入：
 ```bash
 mvn clean install -Ppaper-1.21.4
 ```
 
-### 当前系统限制
-当前系统使用的是Java 17，无法直接编译1.21.4版本。如果需要编译1.21.4版本，请先安装Java 21。
+### 当前限制
+如果您的电脑使用的是Java 17，您只能制作1.20.4版本。要制作1.21.4版本，您需要先安装Java 21。
 
-### 功能特性
-- 多种猫娘相关命令
-- 猫娘主题事件处理器
-- 猫薄荷效果
-- 跳跃提升、夜视和迅捷潜行等特殊能力
-- 带有可爱前缀和后缀的猫娘聊天
-- 只吃肉类的饮食系统
-- 猫爪攻击系统
-- 皮革护甲加成
-- 生物目标调整
-- 主人系统，让猫娘可以拥有主人并进行额外互动
-- 猫娘专有的健康恢复技能，可以同时治疗自己和主人
-- 夜间自动增强效果（夜视、速度、跳跃提升）
-- 主人死亡时猫娘也会死亡的系统
-- bStats统计集成，收集使用数据帮助开发者改进插件
+### NekoX能做什么？
+- 让玩家变成拥有特殊能力的猫娘
+- 添加可爱的猫主题玩家互动方式
+- 赋予猫娘特殊能力，如夜视、高跳和潜行加速
+- 让猫娘聊天时有可爱的消息格式（带有特殊前缀和后缀）
+- 创建特殊饮食系统，猫娘只能吃肉
+- 为猫娘添加爪子攻击
+- 猫娘穿戴皮革护甲时获得额外加成
+- 改变怪物对猫娘的攻击目标选择
+- 让猫娘可以拥有主人并享受特殊互动
+- 让猫娘使用特殊健康技能治疗自己和主人
+- 在夜间赋予猫娘更强的能力（午夜时效果最佳）
+- 可选功能：主人死亡时猫娘也会死亡
+- 收集匿名使用数据以帮助改进插件
 
-### 命令列表
+### 如何使用NekoX命令
+以下是游戏中可以使用的所有命令：
 
-#### 互动命令
-- `/pat <玩家>` - 温柔地抚摸另一个玩家
-- `/lovebite <玩家>` - 给另一个玩家一个爱的咬痕
-- `/earscratch <玩家>` - 轻轻地挠另一个玩家的耳朵
-- `/purr` - 发出舒服的呼噜声
-- `/hiss <玩家>` - 对着另一个玩家发出嘶嘶声
-- `/scratch <玩家>` - 用爪子挠另一个玩家
-- `/attention <玩家>` - 吸引另一个玩家的注意
+#### 有趣的互动命令
+- `/pat <玩家>` - 温柔地抚摸某人
+- `/lovebite <玩家>` - 给某人一个调皮的咬痕
+- `/earscratch <玩家>` - 轻轻地挠某人的耳朵
+- `/purr` - 发出开心的呼噜声
+- `/hiss <玩家>` - 调皮地对某人发出嘶嘶声
+- `/scratch <玩家>` - 用爪子挠某人
+- `/attention <玩家>` - 引起某人的注意
 
-#### 效果命令
-- `/nightvision [玩家]` - 获得夜视效果（默认自己）
-- `/jumpboost [玩家]` - 获得跳跃提升效果（默认自己）
-- `/swiftsneak [玩家]` - 获得迅捷潜行效果（默认自己）
-- `/health` - 猫娘专属技能，可以恢复自己和主人的生命值（消耗饱食度且有冷却时间）
+#### 能力命令
+- `/nightvision [玩家]` - 获得夜视能力（对自己或他人使用）
+- `/jumpboost [玩家]` - 能够跳得更高（对自己或他人使用）
+- `/swiftsneak [玩家]` - 潜行时移动更安静快速（对自己或他人使用）
+- `/health` - （仅限猫娘使用）治疗自己和主人，但会消耗饱食度且有冷却时间
 
 #### 主人系统命令
-- `/owner <子命令>` - 管理主人关系和互动
-  - `/owner add <玩家>` - 向指定猫娘玩家发送主人申请
-  - `/owner accept <玩家>` - 接受指定玩家的主人申请
-  - `/owner deny <玩家>` - 拒绝指定玩家的主人申请
-  - `/owner forceadd <玩家>` - 无需猫娘同意直接成为其主人(管理员专用)
-  - `/owner remove <玩家>` - 移除与指定玩家的主人关系(猫娘和主人都可以使用)
-  - `/owner list` - 查看你(作为猫娘)的所有主人
-  - `/owner mylist` - 查看你拥有的所有猫娘
+- `/owner <子命令>` - 管理您的主人关系
+  - `/owner add <玩家>` - 请求成为某人的主人
+  - `/owner accept <玩家>` - 接受某人的主人请求
+  - `/owner deny <玩家>` - 拒绝某人的主人请求
+  - `/owner forceadd <玩家>` - 无需请求直接成为某人的主人（仅管理员可用）
+  - `/owner remove <玩家>` - 结束主人关系（猫娘和主人都可以使用）
+  - `/owner list` - 查看您的所有主人（如果您是猫娘）
+  - `/owner mylist` - 查看您拥有的所有猫娘
 
-#### 管理命令
+#### 管理员命令
 - `/nekox` - 查看插件信息
-- `/nekox reload` - 重新加载插件配置（需要管理员权限）
-- `/nekox version` - 查看插件版本
-- `/nekoset <玩家> <true/false>` - 设置玩家的猫娘状态（需要管理员权限）
-- `/nekoxhelp` - 查看帮助信息
+- `/nekox reload` - 无需重启服务器即可更新插件设置（仅限管理员）
+- `/nekox version` - 查看您使用的插件版本
+- `/nekoset <玩家> <true/false>` - 将某人变为猫娘或恢复正常（仅限管理员）
+- `/nekoxhelp` - 查看此命令列表
 
-### 配置文件
-插件首次运行后会生成`config.yml`文件，您可以根据需要进行配置。
+### 如何更改插件设置
+首次运行插件时，它会创建一个`config.yml`文件。您可以用记事本打开此文件来更改插件的工作方式。
 
-主要配置选项：
-- `neko-chat` - 启用/禁用猫娘玩家的特殊聊天格式
-- `meat-only` - 限制猫娘玩家只能吃肉和某些其他食物
-- `cat-nip` - 配置猫薄荷物品和效果
-- `claws` - 配置猫爪攻击伤害和冷却时间
-- `mob-targeting` - 调整生物对猫娘玩家的目标锁定
-- `armor-bonus` - 配置穿戴皮革护甲的速度加成
-- `owner-system` - 启用/禁用主人系统功能
-- `health-skill` - 配置健康恢复技能（冷却时间、饱食度消耗、最大等级）
-- `night-effects` - 配置夜间自动增强效果（启用状态、检查间隔、开始/结束/峰值时间、最大等级）
-- `owner-death` - 配置主人死亡系统（启用状态、是否保留物品栏、是否保留等级）
+以下是您可以更改的最重要设置：
+- `neko-chat` - 开启或关闭猫娘的特殊聊天消息
+- `meat-only` - 让猫娘只能吃肉
+- `cat-nip` - 更改猫薄荷的效果
+- `claws` - 调整爪子攻击的伤害和使用频率
+- `mob-targeting` - 更改怪物对猫娘的反应方式
+- `armor-bonus` - 让皮革护甲给猫娘提供更多速度
+- `owner-system` - 开启或关闭主人系统
+- `health-skill` - 更改/health命令的工作方式（使用频率、消耗的饱食度）
+- `night-effects` - 调整特殊夜间能力（何时开始、效果强度）
+- `owner-death` - 选择主人死亡时猫娘是否也死亡，以及她们是否保留物品/等级
 
-### 权限系统
-插件包含完整的权限节点系统，可以通过权限插件进行权限管理。
+### 权限系统说明
+插件使用权限系统来控制谁可以使用哪些命令。大多数命令默认对所有人可用，但有些（如管理员命令）仅对服务器所有者可用。
 
-主要权限：
-- `nekox.pat` - 允许使用/pat命令（默认：true）
-- `nekox.lovebite` - 允许使用/lovebite命令（默认：true）
-- `nekox.earscratch` - 允许使用/earscratch命令（默认：true）
-- `nekox.purr` - 允许使用/purr命令（默认：true）
-- `nekox.hiss` - 允许使用/hiss命令（默认：true）
-- `nekox.scratch` - 允许使用/scratch命令（默认：true）
-- `nekox.attention` - 允许使用/attention命令（默认：true）
-- `nekox.nightvision` - 允许使用/nightvision命令（默认：true）
-- `nekox.jumpboost` - 允许使用/jumpboost命令（默认：true）
-- `nekox.swiftsneak` - 允许使用/swiftsneak命令（默认：true）
-- `nekox.health` - 允许使用/health命令（默认：猫娘可用）
-- `nekox.help` - 允许使用/nekoxhelp命令（默认：true）
-- `nekox.admin` - 允许使用管理员命令（默认：op）
-- `nekox.owner` - 允许使用/owner命令（默认：true）
-- `nekox.owner.set` - 允许设置主人（默认：true）
-- `nekox.owner.remove` - 允许解除主人（默认：true）
-- `nekox.owner.list` - 允许列出主人关系（默认：true）
-- `nekox.owner.info` - 允许查看主人信息（默认：true）
-
-### 统计功能
-插件集成了bStats统计功能，帮助开发者了解插件使用情况。
+### 如何查看有多少人使用NekoX
+插件使用bStats来跟踪有多少服务器使用它。这些数据完全匿名，有助于开发者改进插件。
 
 [![bStats](https://bstats.org/signatures/bukkit/NekoX-Plugin.svg)](https://bstats.org/plugin/bukkit/NekoX-Plugin/27133)
 
-### 注意事项
-- 猫娘玩家数据存储在插件数据文件夹中的`nekos.json`文件中
-- 只有被设置为猫娘的玩家（使用/nekoset命令）才能访问猫娘专属命令和功能
-- 猫娘玩家会有特殊的聊天格式，带有前缀和后缀
-- 主人系统允许猫娘与其他玩家建立特殊关系，解锁额外的互动功能
-- 在夜间，猫娘会自动获得增强能力（夜视、速度、跳跃提升），效果强度在午夜达到峰值
-- 猫娘可以使用/health命令恢复自己和主人的生命值，但会消耗饱食度且有冷却时间
-- 如启用相关功能，当主人死亡时，其所有猫娘也会随之死亡
-- 所有bStats数据都是匿名的，有助于开发者改进插件
+### 重要须知
+- 猫娘玩家信息保存在插件文件夹中的`nekos.json`文件中
+- 只有被设置为猫娘的玩家（使用/nekoset命令）才能使用猫娘功能
+- 猫娘聊天时会有带有可爱前缀和后缀的特殊消息
+- 主人系统让猫娘可以与其他玩家建立特殊关系
+- 在夜间，猫娘会自动获得更好的夜视能力、移动速度和跳跃能力
+- 猫娘可以使用/health治疗自己和主人，但会消耗饱食度且不能频繁使用
+- 如果开启了主人死亡功能，当主人死亡时，所有猫娘也会死亡
