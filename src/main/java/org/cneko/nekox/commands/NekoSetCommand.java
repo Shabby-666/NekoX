@@ -1,39 +1,47 @@
 package org.cneko.nekox.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.cneko.nekox.NekoX;
+import org.cneko.nekox.utils.LanguageManager;
 import org.cneko.nekox.utils.NekoManager;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-public class NekoSetCommand implements CommandExecutor {
+public class NekoSetCommand implements CommandExecutor, TabCompleter {
     private final NekoX plugin;
     private final NekoManager nekoManager;
+    private final LanguageManager languageManager;
     
     public NekoSetCommand(NekoX plugin) {
         this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
+        this.languageManager = plugin.getLanguageManager();
     }
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // 检查命令发送者是否有权限
         if (!sender.hasPermission("nekox.admin")) {
-            sender.sendMessage("§c你没有权限使用此命令！");
+            sender.sendMessage(languageManager.getMessage("commands.no_permission"));
             return true;
         }
         
         // 检查参数数量
         if (args.length < 2) {
-            sender.sendMessage("§c用法: /nekoset <玩家> <true/false>");
+            sender.sendMessage(languageManager.getMessage("commands.help.nekoset"));
             return true;
         }
         
         // 获取目标玩家
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage("§c找不到玩家: " + args[0]);
+            sender.sendMessage(languageManager.getMessage("commands.player_not_found"));
             return true;
         }
         
@@ -42,7 +50,7 @@ public class NekoSetCommand implements CommandExecutor {
         try {
             isNeko = Boolean.parseBoolean(args[1]);
         } catch (Exception e) {
-            sender.sendMessage("§c请指定true或false作为第二个参数！");
+            sender.sendMessage(languageManager.getMessage("commands.nekoset.invalid_param"));
             return true;
         }
         
@@ -51,20 +59,52 @@ public class NekoSetCommand implements CommandExecutor {
         
         if (changed) {
             if (isNeko) {
-                sender.sendMessage("§a成功将玩家 " + target.getName() + " 设置为猫娘！");
-                target.sendMessage("§e你被设置为猫娘了！喵~♪");
+                HashMap<String, String> replacements1 = new HashMap<>();
+                replacements1.put("player", target.getName());
+                sender.sendMessage(languageManager.getMessage("commands.nekoset.set_to_neko", replacements1));
+                target.sendMessage(languageManager.getMessage("commands.nekoset.set_to_neko_target"));
             } else {
-                sender.sendMessage("§a成功取消玩家 " + target.getName() + " 的猫娘状态！");
-                target.sendMessage("§e你的猫娘状态已被取消！");
+                HashMap<String, String> replacements2 = new HashMap<>();
+                replacements2.put("player", target.getName());
+                sender.sendMessage(languageManager.getMessage("commands.nekoset.set_to_human", replacements2));
+                target.sendMessage(languageManager.getMessage("commands.nekoset.set_to_human_target"));
             }
         } else {
             if (isNeko) {
-                sender.sendMessage("§e玩家 " + target.getName() + " 已经是猫娘了！");
+                HashMap<String, String> replacements3 = new HashMap<>();
+                replacements3.put("player", target.getName());
+                sender.sendMessage(languageManager.getMessage("commands.nekoset.already_neko", replacements3));
             } else {
-                sender.sendMessage("§e玩家 " + target.getName() + " 本来就不是猫娘！");
+                HashMap<String, String> replacements4 = new HashMap<>();
+                replacements4.put("player", target.getName());
+                sender.sendMessage(languageManager.getMessage("commands.nekoset.already_not_neko", replacements4));
             }
         }
         
         return true;
+    }
+    
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        List<String> completions = new ArrayList<>();
+        
+        if (args.length == 1) {
+            // 提供在线玩家列表补全
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
+                    completions.add(player.getName());
+                }
+            }
+        } else if (args.length == 2) {
+            // 提供布尔值补全
+            if ("true".startsWith(args[1].toLowerCase())) {
+                completions.add("true");
+            }
+            if ("false".startsWith(args[1].toLowerCase())) {
+                completions.add("false");
+            }
+        }
+        
+        return completions;
     }
 }

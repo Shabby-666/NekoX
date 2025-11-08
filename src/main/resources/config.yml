@@ -7,6 +7,11 @@ neko-chat:
   prefix: "§6[猫娘] §f"
   # 聊天后缀
   suffix: " §6喵~"
+  # 关键字替换规则（将左侧的词替换为右侧的词）
+  keyword-replace:
+    "的": "滴~"
+    "了": "辽~"
+    "是": "素~"
 
 # 只吃肉类设置
 meat-only:
@@ -74,3 +79,75 @@ armor-bonus:
 commands:
   # 是否启用所有命令
   enabled: true
+
+# 主人死亡功能设置
+owner-death:
+  feature:
+    # 是否启用主人死亡时猫娘也死亡的功能
+    enabled: true
+  # 猫娘死亡时是否保留物品栏
+  keep-inventory: false
+  # 猫娘死亡时是否保留等级经验
+  keep-level: false
+
+# 健康恢复技能设置
+health-skill:
+  # 技能冷却时间(秒)
+  cooldown: 60
+  # 每次使用扣除的饱食度
+  hunger-cost: 4
+  # 最大恢复等级
+  max-level: 5
+
+# 夜间效果设置
+night-effects:
+  # 是否启用夜间效果功能
+  enabled: true
+  # 效果开始时间(游戏时间)
+  start-time: 13000
+  # 效果结束时间(游戏时间)
+  end-time: 23000
+  # 效果最强时间(游戏时间)
+  peak-time: 18000
+  # 效果检查间隔(秒)
+  check-interval: 10
+  # 最大效果等级
+  max-level: 5
+
+# 被动攻击增强设置
+passive-attack-boost:
+  # 是否启用被动攻击增强功能
+  enabled: true
+  # 伤害加成（小幅提升）
+  damage-bonus: 0.5
+  # 击退力度倍数
+  knockback-multiplier: 1.2
+
+# 猫娘伤害调整设置
+neko-damage-modification:
+  # 是否启用猫娘伤害调整功能
+  enabled: true
+  # 免疫跌落伤害
+  fall-damage-immunity: true
+  # 其他伤害增加倍数（1.0为原伤害，1.8为增加0.8倍）
+  other-damage-multiplier: 1.8
+  # 调试模式，显示伤害调整信息
+  debug: false
+
+# 猫娘生物行为设置
+neko-mob-behavior:
+  # 是否启用猫娘生物行为功能
+  enabled: true
+  # 苦力怕驱赶功能
+  creeper-repulsion: true
+  # 幻翼驱赶功能
+  phantom-repulsion: true
+  # 调试模式，显示生物行为信息
+  debug: false
+
+# 猫娘爬墙功能设置
+neko-climbing:
+  # 是否启用猫娘爬墙功能
+  enabled: true
+  # 调试模式，显示爬墙信息
+  debug: false
