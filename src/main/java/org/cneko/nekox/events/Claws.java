@@ -55,6 +55,6 @@ public class Claws implements Listener {
         cooldowns.put(playerId, currentTime);
         
         // 发送消息
-        player.sendMessage("§e你的爪子变得更加锋利！");
+        player.sendMessage(plugin.getLanguageManager().getMessage("claws.sharpened"));
     }
 }

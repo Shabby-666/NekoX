@@ -38,10 +38,15 @@ public class NekoChat implements Listener {
         String prefix = config.getString("neko-chat.prefix", "§6[猫娘] §f");
         String suffix = config.getString("neko-chat.suffix", " §6喵~");
         
-        // 处理消息中的某些词汇，使其更有猫娘风格
-        message = message.replaceAll("的", "滴~")
-                        .replaceAll("了", "辽~")
-                        .replaceAll("是", "素~");
+        // 从配置文件中读取并应用关键字替换规则
+        if (config.contains("neko-chat.keyword-replace")) {
+            java.util.Map<String, Object> replaceRules = config.getConfigurationSection("neko-chat.keyword-replace").getValues(false);
+            for (java.util.Map.Entry<String, Object> entry : replaceRules.entrySet()) {
+                String keyword = entry.getKey();
+                String replacement = String.valueOf(entry.getValue());
+                message = message.replaceAll(keyword, replacement);
+            }
+        }
         
         // 设置新的聊天格式
         event.setFormat(prefix + player.getDisplayName() + "§f: " + message + suffix);

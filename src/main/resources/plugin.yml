@@ -1,6 +1,6 @@
 name: NekoX
-version: 1.0.0
-authors: [CNeko]
+version: 4.0-Nextgen
+authors: [_Chinese_Player_]
 description: 一个融合了NekoC和toNeko功能的猫娘插件
 main: org.cneko.nekox.NekoX
 api-version: 1.21
@@ -11,7 +11,7 @@ commands:
     usage: /<command> <玩家>
     permission: nekox.pat
   lovebite:
-    description: 给猫娘一个爱的咬痕
+    description: 给玩家一个爱的咬痕（猫娘使用）
     usage: /<command> <玩家>
     permission: nekox.lovebite
   earscratch:
@@ -19,33 +19,41 @@ commands:
     usage: /<command> <玩家>
     permission: nekox.earscratch
   purr:
-    description: 让猫娘发出呼噜声
+    description: 发出呼噜声（猫娘使用）
     usage: /<command>
     permission: nekox.purr
   hiss:
-    description: 让猫娘发出嘶嘶声
+    description: 发出嘶嘶声（猫娘使用）
     usage: /<command> <玩家>
     permission: nekox.hiss
   scratch:
-    description: 让猫娘挠人
+    description: 挠人（猫娘使用）
     usage: /<command> <玩家>
     permission: nekox.scratch
   attention:
-    description: 吸引猫娘的注意
+    description: 吸引人类的注意（猫娘使用）
     usage: /<command> <玩家>
     permission: nekox.attention
   nightvision:
-    description: 获得夜视效果
+    description: 获得夜视效果（猫娘使用）
     usage: /<command> [玩家]
     permission: nekox.nightvision
   jumpboost:
-    description: 获得跳跃提升效果
+    description: 获得跳跃提升效果（猫娘使用）
     usage: /<command> [玩家]
     permission: nekox.jumpboost
   swiftsneak:
-    description: 获得迅捷潜行效果
+    description: 获得迅捷潜行效果（猫娘使用）
     usage: /<command> [玩家]
     permission: nekox.swiftsneak
+  health:
+    description: 恢复自己和主人的生命值（猫娘使用）
+    usage: /<command>
+    permission: nekox.health
+  myskills:
+    description: 查看猫娘的所有技能及其冷却时间
+    usage: /<command>
+    permission: nekox.myskills
   nekox:
     description: NekoX主命令
     usage: /<command> <reload/version>
@@ -58,6 +66,10 @@ commands:
     description: 设置/取消设置玩家为猫娘
     usage: /<command> <玩家> <true/false>
     permission: nekox.admin
+  owner:
+    description: 主人系统命令
+    usage: /<command> <add/remove/list/mylist/help> [玩家]
+    permission: nekox.owner
 
 permissions:
   nekox.pat:
@@ -80,9 +92,15 @@ permissions:
     default: true
   nekox.swiftsneak:
     default: true
+  nekox.health:
+    default: true
   nekox.help:
+    default: true
+  nekox.myskills:
     default: true
   nekox.admin:
     default: op
     children:
       nekox.help: true
+  nekox.owner:
+    default: true

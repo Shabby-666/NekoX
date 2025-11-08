@@ -35,7 +35,7 @@ public class MeatOnly implements Listener {
         if (!allowedFoods.contains(foodType.name())) {
             // 取消食用
             event.setCancelled(true);
-            player.sendMessage("§c作为猫娘，你只能吃肉类食物！");
+            player.sendMessage(plugin.getLanguageManager().getMessage("meat_only.restriction"));
         }
     }
 }

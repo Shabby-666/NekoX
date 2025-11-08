@@ -6,10 +6,10 @@
 
     <groupId>org.cneko</groupId>
     <artifactId>NekoX</artifactId>
-    <version>1.0.0</version>
+    <version>4.0-Nextgen</version>
     <packaging>jar</packaging>
 
-    <name>NekoX</name>
+    <name>NekoX-Plugin</name>
     <description>一个融合了NekoC和toNeko功能的猫娘插件</description>
 
     <properties>
@@ -92,6 +92,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -117,6 +121,14 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
             <scope>compile</scope>
+        </dependency>
+        
+        <!-- PlaceholderAPI -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.5</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -34,8 +34,25 @@ public class CatNip implements Listener {
         
         Player player = event.getPlayer();
         
+        // 检查玩家是否是猫娘
+        if (!plugin.getNekoManager().isNeko(player)) {
+            return;
+        }
+        
         // 检查玩家是否手持猫薄荷物品
-        if (player.getInventory().getItemInMainHand().getType() != Material.matchMaterial(config.getString("cat-nip.item", "WHEAT_SEEDS"))) {
+        String itemConfig = config.getString("cat-nip.item", "WHEAT_SEEDS");
+        Material catnipMaterial = Material.matchMaterial(itemConfig);
+        if (catnipMaterial == null) {
+            // 如果配置的物品ID无效，使用默认的小麦种子
+            catnipMaterial = Material.WHEAT_SEEDS;
+        }
+        
+        if (player.getInventory().getItemInMainHand().getType() != catnipMaterial) {
+            return;
+        }
+        
+        // 检查物品数量
+        if (player.getInventory().getItemInMainHand().getAmount() <= 0) {
             return;
         }
         
@@ -43,7 +60,13 @@ public class CatNip implements Listener {
         int duration = config.getInt("cat-nip.duration", 60) * 20; // 转换为刻
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 1, false, false));
         player.addPotionEffect(new PotionEffect(VersionUtils.getJumpBoostEffect(), duration, 1, false, false));
-        player.sendMessage("§e你感到异常兴奋！喵~♪");
+        
+        // 发送消息（支持多语言）
+        String message = plugin.getLanguageManager().getMessage("catnip.effect");
+        if (message == null || message.isEmpty()) {
+            message = "§e你感到异常兴奋！喵~♪";
+        }
+        player.sendMessage(message);
         
         // 消耗一个猫薄荷
         player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
