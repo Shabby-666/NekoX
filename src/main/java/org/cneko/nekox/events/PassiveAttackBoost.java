@@ -3,6 +3,7 @@ package org.cneko.nekox.events;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.cneko.nekox.NekoX;
@@ -18,7 +19,7 @@ public class PassiveAttackBoost implements Listener {
         this.plugin = plugin;
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         // 检查伤害者是否为玩家
         if (!(event.getDamager() instanceof Player)) {

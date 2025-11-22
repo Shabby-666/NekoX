@@ -3,6 +3,7 @@ package org.cneko.nekox.events;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.cneko.nekox.NekoX;
@@ -19,7 +20,7 @@ public class OwnerDeathListener implements Listener {
         this.nekoManager = plugin.getNekoManager();
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onOwnerDeath(PlayerDeathEvent event) {
         FileConfiguration config = plugin.getConfig();
         

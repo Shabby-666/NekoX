@@ -1,9 +1,9 @@
 name: NekoX
-version: 4.0-Nextgen
+version: 5.0-ProMax+++
 authors: [_Chinese_Player_]
 description: 一个融合了NekoC和toNeko功能的猫娘插件
 main: org.cneko.nekox.NekoX
-api-version: 1.21
+api-version: 1.13
 
 commands:
   pat:
@@ -70,6 +70,10 @@ commands:
     description: 主人系统命令
     usage: /<command> <add/remove/list/mylist/help> [玩家]
     permission: nekox.owner
+  playernotice:
+    description: 开启/关闭玩家接近提醒功能（猫娘使用）
+    usage: /<command> [on|off]
+    permission: nekox.playernotice
 
 permissions:
   nekox.pat:
@@ -97,6 +101,8 @@ permissions:
   nekox.help:
     default: true
   nekox.myskills:
+    default: true
+  nekox.playernotice:
     default: true
   nekox.admin:
     default: op

@@ -36,6 +36,8 @@ public class NekoXHelp implements CommandExecutor {
         sender.sendMessage("§e" + languageManager.getMessage("commands.help.jumpboost"));
         sender.sendMessage("§e" + languageManager.getMessage("commands.help.swiftsneak"));
         sender.sendMessage("§e" + languageManager.getMessage("commands.help.health"));
+        sender.sendMessage("§e" + languageManager.getMessage("commands.help.myskills"));
+        sender.sendMessage("§e" + languageManager.getMessage("commands.help.playernotice"));
         
         // 管理命令
         sender.sendMessage("§a===== " + languageManager.getMessage("commands.help.management") + " =====");

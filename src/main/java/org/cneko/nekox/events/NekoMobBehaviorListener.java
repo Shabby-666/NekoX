@@ -3,6 +3,7 @@ package org.cneko.nekox.events;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
@@ -20,7 +21,7 @@ public class NekoMobBehaviorListener implements Listener {
      * 监听苦力怕爆炸事件
      * 当苦力怕遇到猫娘时，阻止爆炸并驱赶苦力怕
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onExplosionPrime(ExplosionPrimeEvent event) {
         FileConfiguration config = plugin.getConfig();
         
@@ -72,7 +73,7 @@ public class NekoMobBehaviorListener implements Listener {
      * 监听生物目标锁定事件
      * 阻止幻翼攻击猫娘并驱赶幻翼
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityTarget(EntityTargetLivingEntityEvent event) {
         FileConfiguration config = plugin.getConfig();
         

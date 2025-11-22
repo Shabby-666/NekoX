@@ -2,6 +2,7 @@ package org.cneko.nekox.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -20,7 +21,7 @@ public class StressEffectListener implements Listener {
     /**
      * 监听玩家受到伤害时的事件
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             return;
@@ -56,7 +57,7 @@ public class StressEffectListener implements Listener {
     /**
      * 监听玩家恢复生命值时的事件
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             return;

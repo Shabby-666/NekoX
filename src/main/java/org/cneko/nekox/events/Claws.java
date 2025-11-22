@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 // 由于 org.bukkit.potion.PotionEffectType 未被使用，移除该导入语句
@@ -21,7 +22,7 @@ public class Claws implements Listener {
         this.plugin = NekoX.getInstance();
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player)) {
             return;
@@ -34,6 +35,12 @@ public class Claws implements Listener {
         }
         
         Player player = (Player) event.getDamager();
+        
+        // 检查玩家是否是猫娘
+        if (!plugin.getNekoManager().isNeko(player)) {
+            return;
+        }
+        
         UUID playerId = player.getUniqueId();
         long currentTime = System.currentTimeMillis();
         

@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.potion.PotionEffect;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.NekoManager;
@@ -136,7 +137,7 @@ public class NightEffectsListener implements Listener {
     /**
      * 监听服务器命令事件，检测时间设置命令并立即更新效果
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onServerCommand(ServerCommandEvent event) {
         String command = event.getCommand().toLowerCase();
         // 检测/time set命令

@@ -6,6 +6,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.potion.PotionEffect;
@@ -23,7 +24,7 @@ public class NekoClimbingListener implements Listener {
      * 监听玩家移动事件，实现猫娘爬墙功能
      * 有梯子时速度正常，无梯子时速度减半
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         FileConfiguration config = plugin.getConfig();
         

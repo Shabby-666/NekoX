@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.cneko.nekox.NekoX;
@@ -17,7 +18,7 @@ public class MeatOnly implements Listener {
         this.plugin = NekoX.getInstance();
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerConsume(PlayerItemConsumeEvent event) {
         FileConfiguration config = plugin.getConfig();
         
@@ -26,6 +27,12 @@ public class MeatOnly implements Listener {
         }
         
         Player player = event.getPlayer();
+        
+        // 检查玩家是否是猫娘
+        if (!plugin.getNekoManager().isNeko(player)) {
+            return;
+        }
+        
         Material foodType = event.getItem().getType();
         
         // 获取允许食用的食物列表

@@ -55,7 +55,8 @@ public class NekoSetCommand implements CommandExecutor, TabCompleter {
         }
         
         // 设置玩家的猫娘状态
-        boolean changed = nekoManager.setNeko(target, isNeko);
+        nekoManager.setNeko(target, isNeko);
+        boolean changed = true; // 假设总是成功，因为异步操作无法立即返回结果
         
         if (changed) {
             if (isNeko) {

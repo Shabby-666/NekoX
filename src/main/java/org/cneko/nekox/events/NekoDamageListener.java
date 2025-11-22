@@ -2,6 +2,7 @@ package org.cneko.nekox.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.cneko.nekox.NekoX;
@@ -17,7 +18,7 @@ public class NekoDamageListener implements Listener {
      * 监听猫娘受到伤害时的事件
      * 实现：免疫跌落伤害，其他伤害调整为普通玩家状态下的1.8倍
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             return;

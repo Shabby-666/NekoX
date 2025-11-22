@@ -94,16 +94,22 @@ public class LanguageManager {
             Files.createFile(englishFile.toPath());
             FileConfiguration config = YamlConfiguration.loadConfiguration(englishFile);
             
+            // 英文配置
+            if (!config.contains("plugin.version")) {
+                config.set("plugin.version", "Version: 5.0-ProMax+++");
+                config.set("plugin.version_full", "5.0-ProMax+++");
+                config.set("plugin.author", "Shabby");
+                config.set("plugin.github", "https://github.com/Shabby-666/NekoX");
+            }
+            
             // 基本插件消息
             config.set("plugin.enabled", "NekoX plugin has been successfully enabled!");
             config.set("plugin.disabled", "NekoX plugin has been successfully disabled!");
             config.set("plugin.name", "NekoX");
-            config.set("plugin.version", "Version: 4.0-Nextgen");
             config.set("plugin.chinese_author", "This modified version author: _Chinese_Player_");
             config.set("plugin.help_info", "Type /nekoxhelp for help");
             config.set("plugin.original_authors", "Original Authors");
             config.set("plugin.version_label", "Version");
-            config.set("plugin.version_full", "4.0-Nextgen");
             config.set("commands.nekox.reloaded", "NekoX configuration has been reloaded!");
             config.set("commands.language.current", "Current language: %language%");
             config.set("commands.language.available", "Available languages: %languages%");
@@ -114,25 +120,25 @@ public class LanguageManager {
             config.set("catnip.effect", "You feel the effects of catnip!");
             
             // 命令消息
-            config.set("commands.pat.success", "You petted %player% affectionately!");
+            config.set("commands.pat.success", "You gently petted %player%!");
             config.set("commands.lovebite.success", "You gave %player% a love bite!");
             config.set("commands.earscratch.success", "You scratched %player%'s ears!");
-            config.set("commands.purr.success", "You purred cutely!");
+            config.set("commands.purr.success", "You made a cute purring sound!");
             config.set("commands.hiss.success", "You hissed at %player%!");
             config.set("commands.scratch.success", "You scratched %player%!");
             config.set("commands.attention.success", "You attracted %player%'s attention!");
             config.set("commands.nightvision.success", "You gained night vision!");
-            config.set("commands.jumpboost.success", "You gained jump boost!");
-            config.set("commands.swiftsneak.success", "You gained swift sneak!");
-            config.set("commands.health.name", "Health Restore");
+            config.set("commands.jumpboost.success", "You gained jump boost effect!");
+            config.set("commands.swiftsneak.success", "You gained swift sneak effect!");
+            config.set("commands.health.name", "Health Recovery");
             config.set("commands.health.description", "Description: Restore your and your owner's health");
             config.set("commands.health.cost", "Cost: %cost% hunger points");
-            config.set("commands.health.success", "You used Health Restore! Gained %level% level regeneration effect!");
-            config.set("commands.health.owner_success", "Your neko %neko% gave you regeneration effect! Gained %level% level regeneration effect!");
-            config.set("commands.health.cooldown", "Skill is on cooldown! Wait %time% seconds.");
+            config.set("commands.health.success", "You used health recovery! Gained %level% level health regeneration effect!");
+            config.set("commands.health.owner_success", "Your neko %neko% gave you health regeneration effect! Gained %level% level health regeneration effect!");
+            config.set("commands.health.cooldown", "Skill is on cooldown! Please wait %time% seconds.");
             config.set("commands.health.notneko", "You are not a neko!");
             config.set("commands.health.lowhunger", "You need %cost% hunger points to use this skill!");
-            config.set("commands.health.noowner", "You don't have an owner, cannot use this skill!");
+            config.set("commands.health.noowner", "You don't have an owner, can't use this skill!");
             config.set("commands.myskills.title", "Your Skills");
             config.set("commands.myskills.notplayer", "Only players can use this command!");
             config.set("commands.myskills.available", "Available");
@@ -140,7 +146,7 @@ public class LanguageManager {
             config.set("commands.myskills.cooldown-label", "Cooldown: ");
             config.set("commands.stress.name", "Stress Response");
             config.set("commands.stress.type", "Passive Skill");
-            config.set("commands.stress.description", "Description: Automatically activated when health is below 6, gain Strength 50 for 1 minute");
+            config.set("commands.stress.description", "Description: Automatically activates when health is below 6, gain level 50 strength effect for 1 minute");
             config.set("commands.stress.status-label", "Status: ");
             config.set("commands.stress.active", "Active");
             config.set("commands.stress.inactive", "Inactive");
@@ -188,6 +194,8 @@ public class LanguageManager {
             config.set("commands.help.jumpboost", "/jumpboost [player] - Gain jump boost effect");
             config.set("commands.help.swiftsneak", "/swiftsneak [player] - Gain swift sneak effect");
             config.set("commands.help.health", "/health - Neko restores own and owner's health");
+            config.set("commands.help.myskills", "/myskills - View all neko skills and their cooldowns");
+            config.set("commands.help.playernotice", "/playernotice [on|off] - Toggle player proximity notifications");
             config.set("commands.help.nekox", "/nekox - View plugin information");
             config.set("commands.help.nekox_reload", "/nekox reload - Reload configuration");
             config.set("commands.help.nekox_version", "/nekox version - View plugin version");
@@ -246,12 +254,22 @@ public class LanguageManager {
             config.set("commands.nekoset.already_neko", "%player% is already a neko!");
             config.set("commands.nekoset.already_not_neko", "%player% is already not a neko!");
             
+            // Player notice command messages
+            config.set("commands.playernotice.enabled", "Player notice is currently enabled");
+            config.set("commands.playernotice.disabled", "Player notice is currently disabled");
+            config.set("commands.playernotice.enabled_success", "Player notice has been enabled");
+            config.set("commands.playernotice.disabled_success", "Player notice has been disabled");
+            config.set("commands.playernotice.usage", "Usage: /playernotice [on|off]");
+            
+            // Player notice title messages
+            config.set("player_notice.title", "Nearby Players");
+            
             config.save(englishFile);
         } catch (IOException e) {
             plugin.getLogger().severe("无法创建English.yml语言文件: " + e.getMessage());
         }
     }
-    
+
     private void createDefaultChineseFile() {
         try {
             File chineseFile = new File(languagesDir, "简体中文.yml");
@@ -262,12 +280,10 @@ public class LanguageManager {
             config.set("plugin.enabled", "NekoX插件已成功启用！");
             config.set("plugin.disabled", "NekoX插件已成功禁用！");
             config.set("plugin.name", "NekoX");
-            config.set("plugin.version", "版本: 4.0-Nextgen");
             config.set("plugin.chinese_author", "此改版作者: _Chinese_Player_");
             config.set("plugin.help_info", "输入 /nekoxhelp 查看帮助");
             config.set("plugin.original_authors", "原作者");
             config.set("plugin.version_label", "版本");
-            config.set("plugin.version_full", "4.0-Nextgen");
             config.set("commands.nekox.reloaded", "NekoX配置已重新加载！");
             config.set("commands.language.current", "当前语言: %language%");
             config.set("commands.language.available", "可用语言: %languages%");
@@ -352,6 +368,8 @@ public class LanguageManager {
             config.set("commands.help.jumpboost", "/jumpboost [玩家] - 获得跳跃提升效果");
             config.set("commands.help.swiftsneak", "/swiftsneak [玩家] - 获得迅捷潜行效果");
             config.set("commands.help.health", "/health - 猫娘恢复自身和主人的生命值");
+            config.set("commands.help.myskills", "/myskills - 查看所有猫娘技能及其冷却时间");
+            config.set("commands.help.playernotice", "/playernotice [on|off] - 开启/关闭玩家接近提醒功能");
             config.set("commands.help.nekox", "/nekox - 查看插件信息");
             config.set("commands.help.nekox_reload", "/nekox reload - 重载配置");
             config.set("commands.help.nekox_version", "/nekox version - 查看插件版本");
@@ -409,6 +427,16 @@ public class LanguageManager {
             config.set("commands.nekoset.set_to_human_target", "你已被设置为人类状态！");
             config.set("commands.nekoset.already_neko", "%player%已经是猫娘了！");
             config.set("commands.nekoset.already_not_neko", "%player%已经不是猫娘了！");
+            
+            // Player notice command messages
+            config.set("commands.playernotice.enabled", "玩家接近提醒功能当前已启用");
+            config.set("commands.playernotice.disabled", "玩家接近提醒功能当前已禁用");
+            config.set("commands.playernotice.enabled_success", "玩家接近提醒功能已启用");
+            config.set("commands.playernotice.disabled_success", "玩家接近提醒功能已禁用");
+            config.set("commands.playernotice.usage", "用法: /playernotice [on|off]");
+            
+            // Player notice title messages
+            config.set("player_notice.title", "附近玩家");
             
             config.save(chineseFile);
         } catch (IOException e) {

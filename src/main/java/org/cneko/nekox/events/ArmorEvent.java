@@ -4,6 +4,7 @@ package org.cneko.nekox.events;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -27,19 +28,19 @@ public class ArmorEvent implements Listener {
         this.plugin = NekoX.getInstance();
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         // 玩家加入时检查护甲
         checkArmor(event.getPlayer());
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerItemHeld(PlayerItemHeldEvent event) {
         // 玩家切换手持物品时检查护甲（可能间接影响护甲）
         checkArmor(event.getPlayer());
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent event) {
         // 玩家退出时清理数据
         leatherArmorCount.remove(event.getPlayer());

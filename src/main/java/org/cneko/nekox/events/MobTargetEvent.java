@@ -3,6 +3,7 @@ package org.cneko.nekox.events;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.cneko.nekox.NekoX;
@@ -14,7 +15,7 @@ public class MobTargetEvent implements Listener {
         this.plugin = NekoX.getInstance();
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityTarget(EntityTargetLivingEntityEvent event) {
         FileConfiguration config = plugin.getConfig();
         

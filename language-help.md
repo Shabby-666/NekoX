@@ -55,12 +55,12 @@ Follow these steps to add a new language to the plugin:
 
 ### Language File Example Structure
 Here's a small example of what a language file looks like:
-```yaml
+```
 # Basic plugin messages
 plugin.enabled: "NekoX plugin has been successfully enabled!"
 plugin.disabled: "NekoX plugin has been successfully disabled!"
 plugin.name: "NekoX"
-plugin.version: "Version: 4.0-Nextgen"
+plugin.version: "Version: 5.0-ProMax+++"
 
 # Command messages
 commands.pat.success: "You petted %player% affectionately!"
@@ -129,12 +129,12 @@ NekoX插件通过YAML配置文件支持多种语言。默认情况下，它包�
 
 ### 语言文件示例结构
 以下是语言文件的小示例：
-```yaml
+```
 # 基本插件消息
 plugin.enabled: "NekoX插件已成功启用！"
 plugin.disabled: "NekoX插件已成功禁用！"
 plugin.name: "NekoX"
-plugin.version: "版本: 4.0-Nextgen"
+plugin.version: "版本: 5.0-ProMax+++"
 
 # 命令消息
 commands.pat.success: "你温柔地抚摸了%player%！"
