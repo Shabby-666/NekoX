@@ -1,4 +1,5 @@
 # NekoX - 可爱的猫娘插件
+#### 注：历史版本可在Tags中找到（~~作者不小心手贱给分支全删了，还好留了个tag~~）
 
 ## 这是什么？
 NekoX是一个让Minecraft变得更有趣的插件！它可以让玩家变成可爱的猫娘，拥有特殊能力和互动方式。
@@ -950,5 +951,6 @@ NekoX使用SQLite数据库存储玩家数据，包括：
 如果您在使用NekoX API时遇到问题或有改进建议，请通过以下方式联系我们：
 - GitHub Issues: [https://github.com/Shabby-666/NekoX/issues](https://github.com/Shabby-666/NekoX/issues)
 - QQ：959612591
+
 
 感谢您使用NekoX！
