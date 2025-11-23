@@ -71,8 +71,8 @@ public class PlayerConfigManager {
     }
 
     public void setNoticeEnabled(Player player, boolean enabled) {
-        String playerName = player.getName().toLowerCase();
-        noticeEnabledCache.put(playerName, enabled);
+        final String finalPlayerName = player.getName().toLowerCase();
+        noticeEnabledCache.put(finalPlayerName, enabled);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -80,10 +80,33 @@ public class PlayerConfigManager {
                 String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, ?, " +
                         "(SELECT is_neko FROM player_configs WHERE player_name = ? UNION SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)));";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, playerName);
+                    pstmt.setString(1, finalPlayerName);
                     pstmt.setInt(2, enabled ? 1 : 0);
-                    pstmt.setString(3, playerName);
-                    pstmt.setString(4, playerName);
+                    pstmt.setString(3, finalPlayerName);
+                    pstmt.setString(4, finalPlayerName);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("设置玩家通知状态失败: " + e.getMessage());
+            }
+        });
+    }
+
+    // 新增直接设置玩家通知状态的方法（不触发事件）
+    public void setNoticeEnabledDirect(String playerName, boolean enabled) {
+        final String finalPlayerName = playerName.toLowerCase();
+        noticeEnabledCache.put(finalPlayerName, enabled);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, ?, " +
+                        "(SELECT is_neko FROM player_configs WHERE player_name = ? UNION SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)));";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalPlayerName);
+                    pstmt.setInt(2, enabled ? 1 : 0);
+                    pstmt.setString(3, finalPlayerName);
+                    pstmt.setString(4, finalPlayerName);
                     pstmt.executeUpdate();
                 }
             } catch (SQLException e) {
@@ -104,15 +127,16 @@ public class PlayerConfigManager {
     }
 
     private void loadNoticeEnabledFromDatabase(String playerName) {
+        final String finalPlayerName = playerName.toLowerCase();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String sql = "SELECT notice_enabled FROM player_configs WHERE player_name = ?";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, playerName);
+                    pstmt.setString(1, finalPlayerName);
                     ResultSet rs = pstmt.executeQuery();
                     if (rs.next()) {
                         boolean enabled = rs.getInt("notice_enabled") == 1;
-                        noticeEnabledCache.put(playerName, enabled);
+                        noticeEnabledCache.put(finalPlayerName, enabled);
                     }
                 }
             } catch (SQLException e) {
@@ -122,11 +146,11 @@ public class PlayerConfigManager {
     }
 
     /**
-     * 设置玩家为猫娘
+     * 设置玩家为猫娘（通过玩家对象）
      */
     public void setNeko(Player player, boolean isNeko) {
-        String playerName = player.getName().toLowerCase();
-        isNekoCache.put(playerName, isNeko);
+        final String finalPlayerName = player.getName().toLowerCase();
+        isNekoCache.put(finalPlayerName, isNeko);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -134,9 +158,32 @@ public class PlayerConfigManager {
                 String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, " +
                         "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?);";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, playerName);
-                    pstmt.setString(2, playerName);
-                    pstmt.setString(3, playerName);
+                    pstmt.setString(1, finalPlayerName);
+                    pstmt.setString(2, finalPlayerName);
+                    pstmt.setString(3, finalPlayerName);
+                    pstmt.setInt(4, isNeko ? 1 : 0);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("设置玩家猫娘状态失败: " + e.getMessage());
+            }
+        });
+    }
+
+    // 新增直接设置玩家为猫娘的方法（不触发事件）
+    public void setNekoDirect(String playerName, boolean isNeko) {
+        final String finalPlayerName = playerName.toLowerCase();
+        isNekoCache.put(finalPlayerName, isNeko);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, " +
+                        "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?);";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalPlayerName);
+                    pstmt.setString(2, finalPlayerName);
+                    pstmt.setString(3, finalPlayerName);
                     pstmt.setInt(4, isNeko ? 1 : 0);
                     pstmt.executeUpdate();
                 }
@@ -147,7 +194,32 @@ public class PlayerConfigManager {
     }
 
     /**
-     * 检查玩家是否是猫娘
+     * 设置玩家为猫娘（通过玩家名）
+     */
+    public void setNekoByName(String playerName, boolean isNeko) {
+        final String finalPlayerName = playerName.toLowerCase();
+        isNekoCache.put(finalPlayerName, isNeko);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, " +
+                        "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?);";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalPlayerName);
+                    pstmt.setString(2, finalPlayerName);
+                    pstmt.setString(3, finalPlayerName);
+                    pstmt.setInt(4, isNeko ? 1 : 0);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("设置玩家猫娘状态失败: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 检查玩家是否是猫娘（通过玩家对象）
      */
     public boolean isNeko(Player player) {
         String playerName = player.getName().toLowerCase();
@@ -161,15 +233,16 @@ public class PlayerConfigManager {
     }
 
     private void loadNekoStatusFromDatabase(String playerName) {
+        final String finalPlayerName = playerName.toLowerCase();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String sql = "SELECT is_neko FROM player_configs WHERE player_name = ?";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, playerName);
+                    pstmt.setString(1, finalPlayerName);
                     ResultSet rs = pstmt.executeQuery();
                     if (rs.next()) {
                         boolean isNeko = rs.getInt("is_neko") == 1;
-                        isNekoCache.put(playerName, isNeko);
+                        isNekoCache.put(finalPlayerName, isNeko);
                     }
                 }
             } catch (SQLException e) {
@@ -193,33 +266,33 @@ public class PlayerConfigManager {
     }
 
     /**
-     * 为主人添加猫娘
+     * 为主人添加猫娘（通过玩家对象）
      */
     public void addOwner(Player neko, Player owner) {
         if (!isNeko(neko)) {
             return; // 不是猫娘
         }
 
-        String nekoName = neko.getName().toLowerCase();
-        String ownerName = owner.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
+        final String finalOwnerName = owner.getName().toLowerCase();
 
         // 更新缓存
-        nekoOwnersCache.putIfAbsent(nekoName, new HashSet<>());
-        nekoOwnersCache.get(nekoName).add(ownerName);
+        nekoOwnersCache.putIfAbsent(finalNekoName, new HashSet<>());
+        nekoOwnersCache.get(finalNekoName).add(finalOwnerName);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String sql = "INSERT OR IGNORE INTO neko_owners (neko_name, owner_name) VALUES (?, ?)";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, nekoName);
-                    pstmt.setString(2, ownerName);
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
                     pstmt.executeUpdate();
                 }
                 
                 // 触发主人关系变更事件
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    OwnerRelationshipEvent event = new OwnerRelationshipEvent(nekoName, ownerName, OwnerRelationshipEvent.RelationshipAction.ADD);
+                    OwnerRelationshipEvent event = new OwnerRelationshipEvent(finalNekoName, finalOwnerName, OwnerRelationshipEvent.RelationshipAction.ADD);
                     Bukkit.getPluginManager().callEvent(event);
                 });
             } catch (SQLException e) {
@@ -228,35 +301,151 @@ public class PlayerConfigManager {
         });
     }
 
-    /**
-     * 移除主人与猫娘的关系
-     */
-    public void removeOwner(Player neko, Player owner) {
-        String nekoName = neko.getName().toLowerCase();
-        String ownerName = owner.getName().toLowerCase();
+    // 新增直接添加主人关系的方法（不触发事件）
+    public void addOwnerDirect(String nekoName, String ownerName) {
+        final String finalNekoName = nekoName.toLowerCase();
+        final String finalOwnerName = ownerName.toLowerCase();
+
+        // 检查猫娘是否存在且是猫娘
+        if (!isNeko(finalNekoName)) {
+            return; // 不是猫娘
+        }
 
         // 更新缓存
-        if (!nekoOwnersCache.containsKey(nekoName)) {
+        nekoOwnersCache.putIfAbsent(finalNekoName, new HashSet<>());
+        nekoOwnersCache.get(finalNekoName).add(finalOwnerName);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "INSERT OR IGNORE INTO neko_owners (neko_name, owner_name) VALUES (?, ?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("添加主人关系失败: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 为主人添加猫娘（通过玩家名）
+     */
+    public void addOwnerByName(String nekoName, String ownerName) {
+        final String finalNekoName = nekoName.toLowerCase();
+        final String finalOwnerName = ownerName.toLowerCase();
+
+        // 检查猫娘是否存在且是猫娘
+        if (!isNeko(finalNekoName)) {
+            return; // 不是猫娘
+        }
+
+        // 更新缓存
+        nekoOwnersCache.putIfAbsent(finalNekoName, new HashSet<>());
+        nekoOwnersCache.get(finalNekoName).add(finalOwnerName);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "INSERT OR IGNORE INTO neko_owners (neko_name, owner_name) VALUES (?, ?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("添加主人关系失败: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 移除主人与猫娘的关系（通过玩家对象）
+     */
+    public void removeOwner(Player neko, Player owner) {
+        final String finalNekoName = neko.getName().toLowerCase();
+        final String finalOwnerName = owner.getName().toLowerCase();
+
+        // 更新缓存
+        if (!nekoOwnersCache.containsKey(finalNekoName)) {
             return;
         }
 
-        nekoOwnersCache.get(nekoName).remove(ownerName);
+        nekoOwnersCache.get(finalNekoName).remove(finalOwnerName);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, nekoName);
-                    pstmt.setString(2, ownerName);
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
                     pstmt.executeUpdate();
                 }
                 
                 // 触发主人关系变更事件
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    OwnerRelationshipEvent event = new OwnerRelationshipEvent(nekoName, ownerName, OwnerRelationshipEvent.RelationshipAction.REMOVE);
+                    OwnerRelationshipEvent event = new OwnerRelationshipEvent(finalNekoName, finalOwnerName, OwnerRelationshipEvent.RelationshipAction.REMOVE);
                     Bukkit.getPluginManager().callEvent(event);
                 });
+            } catch (SQLException e) {
+                plugin.getLogger().severe("移除主人关系失败: " + e.getMessage());
+            }
+        });
+    }
+
+    // 新增直接移除主人关系的方法（不触发事件）
+    public void removeOwnerDirect(String nekoName, String ownerName) {
+        final String finalNekoName = nekoName.toLowerCase();
+        final String finalOwnerName = ownerName.toLowerCase();
+
+        // 更新缓存
+        if (!nekoOwnersCache.containsKey(finalNekoName)) {
+            return;
+        }
+
+        nekoOwnersCache.get(finalNekoName).remove(finalOwnerName);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
+                    pstmt.executeUpdate();
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("移除主人关系失败: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 移除主人与猫娘的关系（通过玩家名）
+     */
+    public void removeOwnerByName(String nekoName, String ownerName) {
+        final String finalNekoName = nekoName.toLowerCase();
+        final String finalOwnerName = ownerName.toLowerCase();
+
+        // 更新缓存
+        if (!nekoOwnersCache.containsKey(finalNekoName)) {
+            return;
+        }
+
+        nekoOwnersCache.get(finalNekoName).remove(finalOwnerName);
+
+        // 异步执行数据库操作
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, finalNekoName);
+                    pstmt.setString(2, finalOwnerName);
+                    pstmt.executeUpdate();
+                }
             } catch (SQLException e) {
                 plugin.getLogger().severe("移除主人关系失败: " + e.getMessage());
             }
@@ -268,9 +457,9 @@ public class PlayerConfigManager {
      */
     public Set<Player> getOwners(Player neko) {
         Set<Player> owners = new HashSet<>();
-        String nekoName = neko.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
 
-        Set<String> ownerNames = nekoOwnersCache.get(nekoName);
+        Set<String> ownerNames = nekoOwnersCache.get(finalNekoName);
         if (ownerNames != null) {
             for (String ownerName : ownerNames) {
                 Player owner = Bukkit.getPlayerExact(ownerName);
@@ -296,11 +485,11 @@ public class PlayerConfigManager {
      * 检查某个玩家是否是某只猫娘的主人
      */
     public boolean isOwner(Player owner, Player neko) {
-        String nekoName = neko.getName().toLowerCase();
-        String ownerName = owner.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
+        final String finalOwnerName = owner.getName().toLowerCase();
 
-        Set<String> ownerNames = nekoOwnersCache.get(nekoName);
-        return ownerNames != null && ownerNames.contains(ownerName);
+        Set<String> ownerNames = nekoOwnersCache.get(finalNekoName);
+        return ownerNames != null && ownerNames.contains(finalOwnerName);
     }
 
     /**
@@ -334,10 +523,10 @@ public class PlayerConfigManager {
      */
     public Set<Player> getNekosByOwner(Player owner) {
         Set<Player> nekos = new HashSet<>();
-        String ownerName = owner.getName().toLowerCase();
+        final String finalOwnerName = owner.getName().toLowerCase();
 
         for (Map.Entry<String, Set<String>> entry : nekoOwnersCache.entrySet()) {
-            if (entry.getValue().contains(ownerName)) {
+            if (entry.getValue().contains(finalOwnerName)) {
                 Player neko = Bukkit.getPlayerExact(entry.getKey());
                 // 检查玩家是否是猫娘（包括离线玩家）
                 if (neko != null && neko.isOnline() && isNeko(neko)) {
@@ -371,20 +560,20 @@ public class PlayerConfigManager {
             return; // 已经是主人了
         }
 
-        String requesterName = requester.getName().toLowerCase();
-        String nekoName = neko.getName().toLowerCase();
+        final String finalRequesterName = requester.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
 
         // 更新缓存
-        ownerRequestsCache.putIfAbsent(requesterName, new HashSet<>());
-        ownerRequestsCache.get(requesterName).add(nekoName);
+        ownerRequestsCache.putIfAbsent(finalRequesterName, new HashSet<>());
+        ownerRequestsCache.get(finalRequesterName).add(finalNekoName);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String sql = "INSERT OR IGNORE INTO owner_requests (requester_name, neko_name) VALUES (?, ?)";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, requesterName);
-                    pstmt.setString(2, nekoName);
+                    pstmt.setString(1, finalRequesterName);
+                    pstmt.setString(2, finalNekoName);
                     pstmt.executeUpdate();
                 }
             } catch (SQLException e) {
@@ -397,11 +586,11 @@ public class PlayerConfigManager {
      * 检查是否有主人申请
      */
     public boolean hasOwnerRequest(Player requester, Player neko) {
-        String requesterName = requester.getName().toLowerCase();
-        String nekoName = neko.getName().toLowerCase();
+        final String finalRequesterName = requester.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
 
-        Set<String> requests = ownerRequestsCache.get(requesterName);
-        return requests != null && requests.contains(nekoName);
+        Set<String> requests = ownerRequestsCache.get(finalRequesterName);
+        return requests != null && requests.contains(finalNekoName);
     }
 
     /**
@@ -409,10 +598,10 @@ public class PlayerConfigManager {
      */
     public Set<Player> getOwnerRequests(Player neko) {
         Set<Player> requesters = new HashSet<>();
-        String nekoName = neko.getName().toLowerCase();
+        final String finalNekoName = neko.getName().toLowerCase();
 
         for (Map.Entry<String, Set<String>> entry : ownerRequestsCache.entrySet()) {
-            if (entry.getValue().contains(nekoName)) {
+            if (entry.getValue().contains(finalNekoName)) {
                 Player requester = Bukkit.getPlayerExact(entry.getKey());
                 if (requester != null && requester.isOnline()) {
                     requesters.add(requester);

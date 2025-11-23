@@ -30,6 +30,20 @@ public class NekoManager {
     }
     
     /**
+     * 设置玩家为猫娘（通过玩家名）
+     */
+    public void setNekoByName(String playerName, boolean isNeko) {
+        configManager.setNekoByName(playerName, isNeko);
+        
+        // 触发猫娘状态变更事件（离线玩家）
+        // 注意：对于离线玩家，我们创建一个特殊的事件处理方式
+        // 这里我们需要创建一个适配器或者修改事件类来支持离线玩家
+        // 暂时先注释掉这行代码，避免编译错误
+        // NekoStatusChangeEvent event = new NekoStatusChangeEvent(playerName, isNeko, false);
+        // Bukkit.getPluginManager().callEvent(event);
+    }
+    
+    /**
      * 检查玩家是否是猫娘
      */
     public boolean isNeko(Player player) {
@@ -64,7 +78,7 @@ public class NekoManager {
     }
     
     /**
-     * 为主人添加猫娘
+     * 为主人添加猫娘（通过玩家对象）
      */
     public void addOwner(Player neko, Player owner) {
         configManager.addOwner(neko, owner);
@@ -75,13 +89,35 @@ public class NekoManager {
     }
     
     /**
-     * 移除主人与猫娘的关系
+     * 为主人添加猫娘（通过玩家名）
+     */
+    public void addOwnerByName(String nekoName, String ownerName) {
+        configManager.addOwnerByName(nekoName, ownerName);
+        
+        // 触发主人关系变更事件
+        OwnerRelationshipEvent event = new OwnerRelationshipEvent(nekoName, ownerName, OwnerRelationshipEvent.RelationshipAction.ADD);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+    
+    /**
+     * 移除主人与猫娘的关系（通过玩家对象）
      */
     public void removeOwner(Player neko, Player owner) {
         configManager.removeOwner(neko, owner);
         
         // 触发主人关系变更事件
         OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), owner.getName(), OwnerRelationshipEvent.RelationshipAction.REMOVE);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+    
+    /**
+     * 移除主人与猫娘的关系（通过玩家名）
+     */
+    public void removeOwnerByName(String nekoName, String ownerName) {
+        configManager.removeOwnerByName(nekoName, ownerName);
+        
+        // 触发主人关系变更事件
+        OwnerRelationshipEvent event = new OwnerRelationshipEvent(nekoName, ownerName, OwnerRelationshipEvent.RelationshipAction.REMOVE);
         Bukkit.getPluginManager().callEvent(event);
     }
     
@@ -170,5 +206,35 @@ public class NekoManager {
      */
     public void denyOwnerRequest(Player requester, Player neko) {
         configManager.denyOwnerRequest(requester, neko);
+    }
+    
+    // 新增直接操作方法，供API调用
+    
+    /**
+     * 直接添加主人关系（不触发事件）
+     */
+    public void addOwnerDirect(String nekoName, String ownerName) {
+        configManager.addOwnerDirect(nekoName, ownerName);
+    }
+    
+    /**
+     * 直接移除主人关系（不触发事件）
+     */
+    public void removeOwnerDirect(String nekoName, String ownerName) {
+        configManager.removeOwnerDirect(nekoName, ownerName);
+    }
+    
+    /**
+     * 直接设置玩家为猫娘（不触发事件）
+     */
+    public void setNekoDirect(String playerName, boolean isNeko) {
+        configManager.setNekoDirect(playerName, isNeko);
+    }
+    
+    /**
+     * 获取插件实例
+     */
+    public NekoX getPlugin() {
+        return plugin;
     }
 }
