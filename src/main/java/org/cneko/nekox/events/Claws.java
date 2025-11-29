@@ -18,8 +18,8 @@ public class Claws implements Listener {
     private final NekoX plugin;
     private final Map<UUID, Long> cooldowns = new HashMap<>();
     
-    public Claws() {
-        this.plugin = NekoX.getInstance();
+    public Claws(NekoX plugin) {
+        this.plugin = plugin;
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

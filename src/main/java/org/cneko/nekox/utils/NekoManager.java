@@ -10,22 +10,25 @@ import java.util.*;
 
 public class NekoManager {
     private final NekoX plugin;
-    private final PlayerConfigManager configManager;
+    private final PlayerConfigManagerSafe configManager;
     
     public NekoManager(NekoX plugin) {
         this.plugin = plugin;
-        this.configManager = plugin.getPlayerConfigManager();
+        this.configManager = (PlayerConfigManagerSafe) plugin.getPlayerConfigManager();
     }
     
     /**
      * 设置玩家为猫娘
      */
     public void setNeko(Player player, boolean isNeko) {
+        if (player == null) {
+            throw new IllegalArgumentException("玩家参数不能为null");
+        }
         boolean oldStatus = this.isNeko(player);
         configManager.setNeko(player, isNeko);
         
         // 触发猫娘状态变更事件
-        NekoStatusChangeEvent event = new NekoStatusChangeEvent(player, isNeko, true);
+        NekoStatusChangeEvent event = new NekoStatusChangeEvent(player, isNeko, oldStatus);
         Bukkit.getPluginManager().callEvent(event);
     }
     
@@ -33,6 +36,9 @@ public class NekoManager {
      * 设置玩家为猫娘（通过玩家名）
      */
     public void setNekoByName(String playerName, boolean isNeko) {
+        if (playerName == null || playerName.trim().isEmpty()) {
+            throw new IllegalArgumentException("玩家名不能为null或空");
+        }
         configManager.setNekoByName(playerName, isNeko);
         
         // 触发猫娘状态变更事件（离线玩家）
@@ -47,6 +53,9 @@ public class NekoManager {
      * 检查玩家是否是猫娘
      */
     public boolean isNeko(Player player) {
+        if (player == null) {
+            return false;
+        }
         return configManager.isNeko(player);
     }
     
@@ -54,6 +63,9 @@ public class NekoManager {
      * 检查玩家是否是猫娘（通过玩家名）
      */
     public boolean isNeko(String playerName) {
+        if (playerName == null || playerName.trim().isEmpty()) {
+            return false;
+        }
         return configManager.isNeko(playerName);
     }
     
@@ -114,7 +126,7 @@ public class NekoManager {
      * 移除主人与猫娘的关系（通过玩家名）
      */
     public void removeOwnerByName(String nekoName, String ownerName) {
-        configManager.removeOwnerByName(nekoName, ownerName);
+        configManager.removeOwnerDirect(nekoName, ownerName);
         
         // 触发主人关系变更事件
         OwnerRelationshipEvent event = new OwnerRelationshipEvent(nekoName, ownerName, OwnerRelationshipEvent.RelationshipAction.REMOVE);

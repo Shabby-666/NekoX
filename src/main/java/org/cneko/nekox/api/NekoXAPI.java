@@ -4,20 +4,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.NekoManager;
+import org.cneko.nekox.utils.PlayerConfigManagerSafe;
 
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * NekoX插件API，供其他插件使用
  */
 public class NekoXAPI {
     private static NekoXAPI instance;
-    private final NekoX plugin;
     private final NekoManager nekoManager;
 
     private NekoXAPI(NekoX plugin) {
-        this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
     }
 
@@ -28,6 +26,9 @@ public class NekoXAPI {
      * @return NekoXAPI实例
      */
     public static NekoXAPI getInstance(Plugin plugin) {
+        if (plugin == null) {
+            throw new IllegalArgumentException("插件参数不能为null");
+        }
         if (instance == null) {
             throw new IllegalStateException("NekoXAPI未初始化，请确保NekoX插件已加载");
         }
@@ -52,6 +53,9 @@ public class NekoXAPI {
      * @return 如果是猫娘返回true，否则返回false
      */
     public boolean isNeko(Player player) {
+        if (player == null) {
+            return false;
+        }
         return nekoManager.isNeko(player);
     }
 
@@ -281,7 +285,7 @@ public class NekoXAPI {
     public void setNoticeEnabled(String playerName, boolean enabled) {
         // 直接调用PlayerConfigManager的方法来设置玩家通知状态
         nekoManager.getPlugin().getPlayerConfigManager().setNekoByName(playerName, nekoManager.getPlugin().getPlayerConfigManager().isNeko(playerName));
-        nekoManager.getPlugin().getPlayerConfigManager().setNoticeEnabledDirect(playerName, enabled);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).setNoticeEnabledDirect(playerName, enabled);
     }
 
     /**
@@ -293,7 +297,7 @@ public class NekoXAPI {
     public void setNoticeEnabled(Player player, boolean enabled) {
         // 直接调用PlayerConfigManager的方法来设置玩家通知状态
         nekoManager.getPlugin().getPlayerConfigManager().setNeko(player, nekoManager.getPlugin().getPlayerConfigManager().isNeko(player));
-        nekoManager.getPlugin().getPlayerConfigManager().setNoticeEnabled(player, enabled);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).setNoticeEnabled(player, enabled);
     }
 
     /**
@@ -323,7 +327,7 @@ public class NekoXAPI {
         }
 
         // 直接调用PlayerConfigManager的方法来添加主人关系（不触发事件）
-        nekoManager.getPlugin().getPlayerConfigManager().addOwnerDirect(nekoName, ownerName);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).addOwnerDirect(nekoName, ownerName);
     }
 
     /**
@@ -340,7 +344,7 @@ public class NekoXAPI {
         }
 
         // 直接调用PlayerConfigManager的方法来移除主人关系（不触发事件）
-        nekoManager.getPlugin().getPlayerConfigManager().removeOwnerDirect(nekoName, ownerName);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).removeOwnerDirect(nekoName, ownerName);
     }
 
     /**
@@ -352,7 +356,7 @@ public class NekoXAPI {
      */
     public void setNekoDirect(String playerName, boolean isNeko) {
         // 直接调用PlayerConfigManager的方法来设置玩家为猫娘（不触发事件）
-        nekoManager.getPlugin().getPlayerConfigManager().setNekoDirect(playerName, isNeko);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).setNekoDirect(playerName, isNeko);
     }
 
     /**
@@ -364,6 +368,6 @@ public class NekoXAPI {
      */
     public void setNoticeEnabledDirect(String playerName, boolean enabled) {
         // 直接调用PlayerConfigManager的方法来设置玩家通知状态（不触发事件）
-        nekoManager.getPlugin().getPlayerConfigManager().setNoticeEnabledDirect(playerName, enabled);
+        ((PlayerConfigManagerSafe) nekoManager.getPlugin().getPlayerConfigManager()).setNoticeEnabledDirect(playerName, enabled);
     }
 }

@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.LanguageManager;
 import org.cneko.nekox.utils.NekoManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public class Hiss implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.only_player"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.only_player", "Only players can use this command!"));
             return true;
         }
         
@@ -35,28 +36,29 @@ public class Hiss implements CommandExecutor, TabCompleter {
         
         // 检查玩家是否是猫娘
         if (!nekoManager.isNeko(player)) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.notneko", "You are not a neko!"));
             return true;
         }
         
         if (args.length == 0) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.help.hiss"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.hiss", "Usage: /hiss <player>"));
             return true;
         }
         
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.player_not_found"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.player_not_found", "Player not found!"));
             return true;
         }
         
         // 发送消息给玩家
         HashMap<String, String> replacements = new HashMap<>();
         replacements.put("player", target.getName());
-        player.sendMessage("§e" + languageManager.replacePlaceholders(languageManager.getMessage("commands.hiss.success"), replacements));
+        String hissMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.hiss.success", "You hissed at {player}!");
+        player.sendMessage("§e" + SafeMessageUtils.replacePlaceholdersSafe(hissMessage, replacements));
         
         replacements.put("player", player.getName());
-        target.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.hiss.success"), replacements));
+        target.sendMessage("§a" + SafeMessageUtils.replacePlaceholdersSafe(SafeMessageUtils.getSafeMessage(languageManager, "commands.hiss.received", "{player} hissed at you!"), replacements));
         
         // 播放声音
         player.getWorld().playSound(player.getLocation(), "entity.cat.hiss", 1.0f, 1.0f);

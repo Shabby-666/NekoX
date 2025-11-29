@@ -1,5 +1,5 @@
 name: NekoX
-version: 5.0-ProMax+++
+version: 5.0-ProMax+++(Emergency-fix)
 authors: [_Chinese_Player_]
 description: 一个融合了NekoC和toNeko功能的猫娘插件
 main: org.cneko.nekox.NekoX
@@ -74,6 +74,10 @@ commands:
     description: 开启/关闭玩家接近提醒功能（猫娘使用）
     usage: /<command> [on|off]
     permission: nekox.playernotice
+  climb:  # 添加爬墙命令
+    description: 开启/关闭爬墙功能（猫娘使用）
+    usage: /<command>
+    permission: nekox.climb
 
 permissions:
   nekox.pat:
@@ -103,6 +107,8 @@ permissions:
   nekox.myskills:
     default: true
   nekox.playernotice:
+    default: true
+  nekox.climb:  # 添加爬墙权限
     default: true
   nekox.admin:
     default: op

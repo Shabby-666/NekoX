@@ -16,8 +16,8 @@ import org.cneko.nekox.utils.VersionUtils;
 public class CatNip implements Listener {
     private final NekoX plugin;
     
-    public CatNip() {
-        this.plugin = NekoX.getInstance();
+    public CatNip(NekoX plugin) {
+        this.plugin = plugin;
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -60,7 +60,7 @@ public class CatNip implements Listener {
         // 应用猫薄荷效果
         int duration = config.getInt("cat-nip.duration", 60) * 20; // 转换为刻
         player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, 1, false, false));
-        player.addPotionEffect(new PotionEffect(VersionUtils.getJumpBoostEffect(), duration, 1, false, false));
+                player.addPotionEffect(new PotionEffect(VersionUtils.getJumpBoostEffect(), duration, 1, false, false));
         
         // 发送消息（支持多语言）
         String message = plugin.getLanguageManager().getMessage("catnip.effect");

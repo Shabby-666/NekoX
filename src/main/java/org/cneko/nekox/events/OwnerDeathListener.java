@@ -15,8 +15,8 @@ public class OwnerDeathListener implements Listener {
     private final NekoX plugin;
     private final NekoManager nekoManager;
     
-    public OwnerDeathListener() {
-        this.plugin = NekoX.getInstance();
+    public OwnerDeathListener(NekoX plugin) {
+        this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
     }
     
@@ -40,10 +40,7 @@ public class OwnerDeathListener implements Listener {
         
         // 对每个猫娘执行死亡操作
         for (Player neko : nekos) {
-            // 保存猫娘的物品栏和经验（可选）
-            // 这里可以根据配置决定是否保存物品栏和经验
-            boolean keepInventory = config.getBoolean("owner-death.keep-inventory", false);
-            boolean keepLevel = config.getBoolean("owner-death.keep-level", false);
+            // 可以根据需要添加保存猫娘物品栏和经验的逻辑
             
             // 可以添加一条消息通知猫娘
             neko.sendMessage("§c你的主人已死亡，你也随之倒下了...");

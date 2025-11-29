@@ -31,17 +31,23 @@ public class VersionUtils {
      * @return 跳跃提升效果类型
      */
     public static PotionEffectType getJumpBoostEffect() {
-        if (isVersion1214OrHigher()) {
-            // 1.21.4及以上版本使用JUMP_BOOST
+        // 尝试使用JUMP常量（通用方式）
+        try {
+            // 使用反射检查是否存在JUMP_BOOST常量
             try {
-                return PotionEffectType.getByName("JUMP_BOOST");
-            } catch (Exception e) {
-                // 降级处理
+                return (PotionEffectType) PotionEffectType.class.getDeclaredField("JUMP_BOOST").get(null);
+            } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
+                // 如果没有JUMP_BOOST，则使用JUMP
                 return PotionEffectType.JUMP;
             }
-        } else {
-            // 1.21.4以下版本使用JUMP
-            return PotionEffectType.JUMP;
+        } catch (Exception e) {
+            // 发生其他异常时，使用JUMP常量作为最后的手段
+            try {
+                return PotionEffectType.JUMP;
+            } catch (Exception ex) {
+                // 所有方法都失败时返回null
+                return null;
+            }
         }
     }
     
@@ -51,18 +57,8 @@ public class VersionUtils {
      * @return 夜视效果类型
      */
     public static PotionEffectType getNightVisionEffect() {
-        if (isVersion1214OrHigher()) {
-            // 1.21.4及以上版本使用NIGHT_VISION
-            try {
-                return PotionEffectType.getByName("NIGHT_VISION");
-            } catch (Exception e) {
-                // 降级处理
-                return PotionEffectType.NIGHT_VISION;
-            }
-        } else {
-            // 1.21.4以下版本使用NIGHT_VISION
-            return PotionEffectType.NIGHT_VISION;
-        }
+        // 直接返回NIGHT_VISION枚举常量
+        return PotionEffectType.NIGHT_VISION;
     }
     
     /**
@@ -71,18 +67,8 @@ public class VersionUtils {
      * @return 速度效果类型
      */
     public static PotionEffectType getSpeedEffect() {
-        if (isVersion1214OrHigher()) {
-            // 1.21.4及以上版本使用SPEED
-            try {
-                return PotionEffectType.getByName("SPEED");
-            } catch (Exception e) {
-                // 降级处理
-                return PotionEffectType.SPEED;
-            }
-        } else {
-            // 1.21.4以下版本使用SPEED
-            return PotionEffectType.SPEED;
-        }
+        // 直接返回SPEED枚举常量
+        return PotionEffectType.SPEED;
     }
     
     /**

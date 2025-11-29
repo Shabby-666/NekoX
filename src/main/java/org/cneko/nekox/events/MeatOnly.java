@@ -14,8 +14,8 @@ import java.util.List;
 public class MeatOnly implements Listener {
     private final NekoX plugin;
     
-    public MeatOnly() {
-        this.plugin = NekoX.getInstance();
+    public MeatOnly(NekoX plugin) {
+        this.plugin = plugin;
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

@@ -1,12 +1,12 @@
 package org.cneko.nekox.events;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.cneko.nekox.NekoX;
@@ -14,14 +14,12 @@ import org.cneko.nekox.NekoX;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 public class PlayerProximityListener implements Listener {
     private final NekoX plugin;
     private final Map<UUID, BukkitTask> playerTasks = new HashMap<>();
     private static final int CHECK_RADIUS = 25;
     private static final int CHECK_INTERVAL = 20; // 20 ticks = 1 second
-    private static final int TITLE_FADE_IN = 5; // 5 ticks
-    private static final int TITLE_STAY = 40; // 40 ticks
-    private static final int TITLE_FADE_OUT = 5; // 5 ticks
 
     public PlayerProximityListener(NekoX plugin) {
         this.plugin = plugin;
@@ -30,27 +28,16 @@ public class PlayerProximityListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        // 确保玩家不为null
-        if (player != null) {
-            startProximityCheckTask(player);
-        }
+        startProximityCheckTask(player);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        // 确保玩家不为null
-        if (player != null) {
-            cancelProximityCheckTask(player);
-        }
+        cancelProximityCheckTask(player);
     }
 
     private void startProximityCheckTask(Player player) {
-        // 确保玩家不为null
-        if (player == null) {
-            return;
-        }
-        
         cancelProximityCheckTask(player);
 
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> checkNearbyPlayers(player), 0, CHECK_INTERVAL);
@@ -58,11 +45,6 @@ public class PlayerProximityListener implements Listener {
     }
 
     private void cancelProximityCheckTask(Player player) {
-        // 确保玩家不为null
-        if (player == null) {
-            return;
-        }
-        
         UUID playerId = player.getUniqueId();
         if (playerTasks.containsKey(playerId)) {
             BukkitTask task = playerTasks.get(playerId);
@@ -74,57 +56,35 @@ public class PlayerProximityListener implements Listener {
     }
 
     private void checkNearbyPlayers(Player nekoPlayer) {
-        // 确保玩家不为null且在线
-        if (nekoPlayer == null || !nekoPlayer.isOnline()) {
+        if (!nekoPlayer.isOnline()) {
             cancelProximityCheckTask(nekoPlayer);
             return;
         }
 
         // 异步检查猫娘状态和通知设置
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            // 添加空指针检查
-            if (nekoPlayer == null || plugin == null || plugin.getNekoManager() == null || plugin.getPlayerConfigManager() == null) {
-                return;
-            }
-            
             boolean isNeko = plugin.getNekoManager().isNeko(nekoPlayer);
             boolean isNoticeEnabled = plugin.getPlayerConfigManager().isNoticeEnabled(nekoPlayer);
             
             // 回到主线程执行UI操作
             Bukkit.getScheduler().runTask(plugin, () -> {
-                // 再次检查玩家是否仍然在线且不为null
-                if (nekoPlayer == null || !nekoPlayer.isOnline() || !isNeko || !isNoticeEnabled) {
+                if (!isNeko || !isNoticeEnabled) {
                     return;
                 }
 
                 StringBuilder noticeMessage = new StringBuilder();
                 boolean hasNearbyPlayers = false;
 
-                // 获取猫娘玩家的位置，添加空指针检查
-                Location nekoLocation = nekoPlayer.getLocation();
-                if (nekoLocation == null) {
-                    return;
-                }
-
                 for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
-                    // 添加多个空指针检查
-                    if (nearbyPlayer == null || nearbyPlayer.equals(nekoPlayer)) {
+                    if (nearbyPlayer.equals(nekoPlayer)) {
                         continue;
                     }
 
-                    // 检查世界是否相同
-                    if (nearbyPlayer.getWorld() == null || nekoPlayer.getWorld() == null || 
-                        !nearbyPlayer.getWorld().equals(nekoPlayer.getWorld())) {
+                    if (!nearbyPlayer.getWorld().equals(nekoPlayer.getWorld())) {
                         continue;
                     }
 
-                    // 获取附近玩家的位置
-                    Location nearbyLocation = nearbyPlayer.getLocation();
-                    if (nearbyLocation == null) {
-                        continue;
-                    }
-
-                    double distance = nearbyLocation.distance(nekoLocation);
+                    double distance = nearbyPlayer.getLocation().distance(nekoPlayer.getLocation());
 
                     if (distance <= CHECK_RADIUS) {
                         if (hasNearbyPlayers) {
@@ -136,14 +96,10 @@ public class PlayerProximityListener implements Listener {
                 }
 
                 if (hasNearbyPlayers) {
-                            String title = plugin.getLanguageManager().getMessage("player_notice.title");
-                            String subtitle = noticeMessage.toString();
-                            // 确保在发送标题前玩家仍然在线
-                            if (nekoPlayer.isOnline()) {
-                                // 使用Bukkit原生的sendTitle方法，避免依赖Adventure API
-                                nekoPlayer.sendTitle(title, subtitle, TITLE_FADE_IN, TITLE_STAY, TITLE_FADE_OUT);
-                            }
-                        }
+                    String title = plugin.getLanguageManager().getMessage("player_notice.title");
+                    String subtitle = noticeMessage.toString();
+                    nekoPlayer.sendTitle(title, subtitle, 5, 40, 5);
+                }
             });
         });
     }

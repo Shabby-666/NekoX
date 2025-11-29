@@ -26,50 +26,46 @@ public class NekoClimbingListener implements Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        try {
-            FileConfiguration config = plugin.getConfig();
+        FileConfiguration config = plugin.getConfig();
+        
+        // 检查功能是否启用
+        if (!config.getBoolean("neko-climbing.enabled", true)) {
+            return;
+        }
+        
+        Player player = event.getPlayer();
+        
+        // 检查是否是猫娘
+        if (!plugin.getNekoManager().isNeko(player)) {
+            return;
+        }
+        
+        // 检查玩家是否在爬墙（接触墙壁且向上移动）
+        if (isClimbingWall(player)) {
+            // 检查玩家是否有梯子
+            boolean hasLadder = hasLadderNearby(player);
             
-            // 检查功能是否启用
-            if (!config.getBoolean("neko-climbing.enabled", true)) {
-                return;
-            }
-            
-            Player player = event.getPlayer();
-            
-            // 检查是否是猫娘
-            if (!plugin.getNekoManager().isNeko(player)) {
-                return;
-            }
-            
-            // 检查玩家是否在爬墙（接触墙壁且向上移动）
-            if (isClimbingWall(player)) {
-                // 检查玩家是否有梯子
-                boolean hasLadder = hasLadderNearby(player);
+            // 根据是否有梯子调整爬墙速度
+            if (hasLadder) {
+                // 有梯子：正常速度
+                applyClimbingEffect(player, 1);
                 
-                // 根据是否有梯子调整爬墙速度
-                if (hasLadder) {
-                    // 有梯子：正常速度
-                    applyClimbingEffect(player, 1);
-                    
-                    // 发送调试消息
-                    if (config.getBoolean("neko-climbing.debug", false)) {
-                        player.sendMessage("§a有梯子辅助，爬墙速度正常！");
-                    }
-                } else {
-                    // 无梯子：速度减半
-                    applyClimbingEffect(player, 0);
-                    
-                    // 发送调试消息
-                    if (config.getBoolean("neko-climbing.debug", false)) {
-                        player.sendMessage("§c没有梯子，爬墙速度减半！");
-                    }
+                // 发送调试消息
+                if (config.getBoolean("neko-climbing.debug", false)) {
+                    player.sendMessage("§a有梯子辅助，爬墙速度正常！");
                 }
             } else {
-                // 不在爬墙时移除效果
-                removeClimbingEffect(player);
+                // 无梯子：速度减半
+                applyClimbingEffect(player, 0);
+                
+                // 发送调试消息
+                if (config.getBoolean("neko-climbing.debug", false)) {
+                    player.sendMessage("§c没有梯子，爬墙速度减半！");
+                }
             }
-        } catch (Exception e) {
-            plugin.getLogger().warning("处理猫娘爬墙事件时发生异常: " + e.getMessage());
+        } else {
+            // 不在爬墙时移除效果
+            removeClimbingEffect(player);
         }
     }
     
@@ -78,7 +74,7 @@ public class NekoClimbingListener implements Listener {
      */
     private boolean isClimbingWall(Player player) {
         // 玩家必须在地面上方且向上移动
-        if (player.getLocation().getBlock().getType().isSolid() || player.getVelocity().getY() <= 0) {
+        if (player.isOnGround() || player.getVelocity().getY() <= 0) {
             return false;
         }
         

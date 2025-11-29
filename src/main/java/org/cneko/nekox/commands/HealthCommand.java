@@ -2,6 +2,7 @@ package org.cneko.nekox.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -10,6 +11,7 @@ import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.NekoManager;
 import org.cneko.nekox.utils.SkillManager;
 import org.cneko.nekox.utils.LanguageManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.HashMap;
 
 public class HealthCommand implements CommandExecutor {
@@ -28,7 +30,7 @@ public class HealthCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.only_player", "Only players can use this command!"));
             return true;
         }
         
@@ -36,7 +38,7 @@ public class HealthCommand implements CommandExecutor {
         
         // 检查玩家是否是猫娘
         if (!nekoManager.isNeko(neko)) {
-            neko.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+            neko.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.notneko", "You are not a neko!"));
             return true;
         }
         
@@ -45,7 +47,7 @@ public class HealthCommand implements CommandExecutor {
             long remaining = skillManager.getRemainingCooldown(neko, SkillManager.SkillType.HEALTH_RESTORE);
             HashMap<String, String> replacements = new HashMap<>();
             replacements.put("time", String.valueOf(remaining));
-            neko.sendMessage("§c" + languageManager.replacePlaceholders(languageManager.getMessage("commands.health.cooldown"), replacements));
+            neko.sendMessage("§c" + SafeMessageUtils.replacePlaceholdersSafe(SafeMessageUtils.getSafeMessage(languageManager, "commands.health.cooldown", "Cooldown: {time} seconds remaining"), replacements));
             return true;
         }
         
@@ -54,7 +56,7 @@ public class HealthCommand implements CommandExecutor {
         if (neko.getFoodLevel() < hungerCost) {
             HashMap<String, String> replacements = new HashMap<>();
             replacements.put("cost", String.valueOf(hungerCost));
-            neko.sendMessage("§c" + languageManager.replacePlaceholders(languageManager.getMessage("commands.health.lowhunger"), replacements));
+            neko.sendMessage("§c" + SafeMessageUtils.replacePlaceholdersSafe(SafeMessageUtils.getSafeMessage(languageManager, "commands.health.lowhunger", "Not enough hunger! Need {cost} hunger points"), replacements));
             return true;
         }
         
@@ -62,7 +64,7 @@ public class HealthCommand implements CommandExecutor {
         java.util.Set<Player> owners = nekoManager.getOwners(neko);
         
         if (owners.isEmpty()) {
-            neko.sendMessage("§c" + languageManager.getMessage("commands.health.noowner"));
+            neko.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.noowner", "You have no owner!"));
             return true;
         }
         
@@ -83,26 +85,26 @@ public class HealthCommand implements CommandExecutor {
         
         // 计算猫娘的恢复等级
         double nekoHealth = neko.getHealth();
-        double nekoMaxHealth = neko.getMaxHealth();
+        double nekoMaxHealth = neko.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
         int nekoLevel = calculateRestoreLevel(nekoHealth, nekoMaxHealth, maxLevel);
         
         // 给猫娘添加恢复效果
         neko.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, nekoLevel, false, false));
         HashMap<String, String> nekoReplacements = new HashMap<>();
         nekoReplacements.put("level", String.valueOf(nekoLevel + 1));
-        neko.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.health.success"), nekoReplacements));
+        neko.sendMessage("§a" + SafeMessageUtils.replacePlaceholdersSafe(SafeMessageUtils.getSafeMessage(languageManager, "commands.health.success", "Health restored! Level {level}"), nekoReplacements));
         
         // 给每个主人添加恢复效果
         for (Player owner : owners) {
             double ownerHealth = owner.getHealth();
-            double ownerMaxHealth = owner.getMaxHealth();
+            double ownerMaxHealth = owner.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             int ownerLevel = calculateRestoreLevel(ownerHealth, ownerMaxHealth, maxLevel);
             
             owner.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, ownerLevel, false, false));
             HashMap<String, String> ownerReplacements = new HashMap<>();
             ownerReplacements.put("neko", neko.getName());
             ownerReplacements.put("level", String.valueOf(ownerLevel + 1));
-            owner.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.health.owner_success"), ownerReplacements));
+            owner.sendMessage("§a" + SafeMessageUtils.replacePlaceholdersSafe(SafeMessageUtils.getSafeMessage(languageManager, "commands.health.owner_success", "{neko} restored your health! Level {level}"), ownerReplacements));
         }
     }
     

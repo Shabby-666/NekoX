@@ -7,12 +7,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.LanguageManager;
-import org.cneko.nekox.utils.NekoXPlaceholderExpansion;
 // 移除未使用的导入
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class NekoXCommand implements CommandExecutor, TabCompleter {
@@ -26,12 +26,26 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        // 检查LanguageManager是否已正确初始化
+        if (languageManager == null) {
+            sender.sendMessage("§cNekoX插件语言系统未正确初始化，请联系管理员检查插件配置。");
+            plugin.getLogger().severe("LanguageManager未正确初始化，请检查插件配置文件和语言文件。");
+            return true;
+        }
+        
         if (args.length == 0) {
-            sender.sendMessage("§6===== " + languageManager.getMessage("plugin.name") + " =====");
-            sender.sendMessage("§e" + languageManager.getMessage("plugin.version"));
-            sender.sendMessage("§e" + languageManager.getMessage("plugin.chinese_author"));
-            sender.sendMessage("§e" + languageManager.getMessage("plugin.help_info"));
-            sender.sendMessage("§e===== " + languageManager.getMessage("plugin.original_authors") + " =====");
+            // 添加空值检查，确保消息不会返回null
+            String pluginName = getSafeMessage("plugin.name", "NekoX");
+            String pluginVersion = getSafeMessage("plugin.version", "Version: 5.0-ProMax+++");
+            String chineseAuthor = getSafeMessage("plugin.chinese_author", "This modified version author: _Chinese_Player_");
+            String helpInfo = getSafeMessage("plugin.help_info", "Type /nekoxhelp for help");
+            String originalAuthors = getSafeMessage("plugin.original_authors", "Original Authors");
+            
+            sender.sendMessage("§6===== " + pluginName + " =====");
+            sender.sendMessage("§e" + pluginVersion);
+            sender.sendMessage("§e" + chineseAuthor);
+            sender.sendMessage("§e" + helpInfo);
+            sender.sendMessage("§e===== " + originalAuthors + " =====");
             sender.sendMessage("§eToNeko：https://modrinth.com/user/CrystalNeko");
             sender.sendMessage("§eNekoC：https://modrinth.com/user/Kurumi78");
             return true;
@@ -45,15 +59,18 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
             case "reload":
             case "r":
                 if (!sender.hasPermission("nekox.admin")) {
-                    sender.sendMessage("§c" + languageManager.getMessage("commands.no_permission"));
+                    sender.sendMessage("§c" + getSafeMessage("commands.no_permission", "You don't have permission to execute this command!"));
                     return true;
                 }
                 plugin.reloadConfig();
-                sender.sendMessage("§e" + languageManager.getMessage("commands.nekox.reloaded"));
+                sender.sendMessage("§e" + getSafeMessage("commands.nekox.reloaded", "NekoX configuration has been reloaded!"));
                 break;
             case "version":
             case "v":
-                sender.sendMessage("§6" + languageManager.getMessage("plugin.name") + " " + languageManager.getMessage("plugin.version_label") + " §e" + languageManager.getMessage("plugin.version_full"));
+                String name = getSafeMessage("plugin.name", "NekoX");
+                String versionLabel = getSafeMessage("plugin.version_label", "Version");
+                String versionFull = getSafeMessage("plugin.version_full", "5.0-ProMax+++");
+                sender.sendMessage("§6" + name + " " + versionLabel + " §e" + versionFull);
                 break;
             case "language":
             case "lang":
@@ -63,11 +80,22 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
                 handlePlaceholdersCommand(sender);
                 break;
             default:
-                sender.sendMessage("§c" + languageManager.getMessage("commands.unknown"));
+                sender.sendMessage("§c" + getSafeMessage("commands.unknown", "Unknown command argument! Type /nekoxhelp for help"));
                 break;
         }
         
         return true;
+    }
+    
+    /**
+     * 安全获取消息，防止空指针异常
+     */
+    private String getSafeMessage(String key, String defaultValue) {
+        if (languageManager == null) {
+            return defaultValue;
+        }
+        String message = languageManager.getMessage(key);
+        return message != null ? message : defaultValue;
     }
     
     /**
@@ -77,51 +105,70 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         if (args.length < 2) {
             // 显示当前语言和可用语言列表
             HashMap<String, String> replacements = new HashMap<>();
-            replacements.put("language", languageManager.getCurrentLanguage());
-            sender.sendMessage("§e" + languageManager.replacePlaceholders(languageManager.getMessage("commands.language.current"), replacements));
+            replacements.put("language", languageManager != null ? languageManager.getCurrentLanguage() : "English");
+            sender.sendMessage("§e" + replacePlaceholdersSafe(getSafeMessage("commands.language.current", "Current language: %language%"), replacements));
             
             replacements.clear();
-            replacements.put("languages", String.join(", ", languageManager.getAvailableLanguages()));
-            sender.sendMessage("§e" + languageManager.replacePlaceholders(languageManager.getMessage("commands.language.available"), replacements));
+            Set<String> availableLanguages = languageManager != null ? languageManager.getAvailableLanguages() : java.util.Set.of("English", "简体中文");
+            replacements.put("languages", String.join(", ", availableLanguages));
+            sender.sendMessage("§e" + replacePlaceholdersSafe(getSafeMessage("commands.language.available", "Available languages: %languages%"), replacements));
             
-            sender.sendMessage("§e" + languageManager.getMessage("commands.language.usage"));
+            sender.sendMessage("§e" + getSafeMessage("commands.language.usage", "Usage: /nekox language <language>"));
             return;
         }
         
         String language = args[1];
-        Set<String> availableLanguages = languageManager.getAvailableLanguages();
+        Set<String> availableLanguages = languageManager != null ? languageManager.getAvailableLanguages() : java.util.Set.of("English", "简体中文");
         
-        if (availableLanguages.contains(language)) {
+        if (availableLanguages.contains(language) && languageManager != null) {
             languageManager.setLanguage(language);
             HashMap<String, String> replacements = new HashMap<>();
             replacements.put("language", language);
-            sender.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.language.changed"), replacements));
+            sender.sendMessage("§a" + replacePlaceholdersSafe(getSafeMessage("commands.language.changed", "Language has been changed to %language%!"), replacements));
         } else {
             HashMap<String, String> replacements = new HashMap<>();
             replacements.put("languages", String.join(", ", availableLanguages));
-            sender.sendMessage("§c" + languageManager.replacePlaceholders(languageManager.getMessage("commands.language.invalid"), replacements));
+            sender.sendMessage("§c" + replacePlaceholdersSafe(getSafeMessage("commands.language.invalid", "Invalid language! Available languages: %languages%"), replacements));
         }
     }
     
+    /**
+     * 安全替换占位符，防止空指针异常
+     */
+    private String replacePlaceholdersSafe(String message, Map<String, String> placeholders) {
+        if (message == null || placeholders == null || placeholders.isEmpty()) {
+            return message != null ? message : "";
+        }
+        
+        String result = message;
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            if (entry.getValue() != null) {
+                result = result.replace("%" + entry.getKey() + "%", entry.getValue());
+            }
+        }
+        
+        return result;
+    }
+    
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§6===== " + languageManager.getMessage("commands.help.title") + " =====");
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.pat"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.lovebite"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.earscratch"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.purr"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.hiss"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.scratch"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.attention"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nightvision"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.jumpboost"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.swiftsneak"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.health"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekox"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekox_reload"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekox_version"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekoset"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekox_language"));
-        sender.sendMessage("§e" + languageManager.getMessage("commands.help.nekox_placeholders"));
+        sender.sendMessage("§6===== " + getSafeMessage("commands.help.title", "NekoX Help") + " =====");
+        sender.sendMessage("§e" + getSafeMessage("commands.help.pat", "/pat <player> - Pet a neko"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.lovebite", "/lovebite <player> - Give a love bite"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.earscratch", "/earscratch <player> - Scratch a neko's ears"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.purr", "/purr - Make a cute purring sound"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.hiss", "/hiss <player> - Hiss at a player"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.scratch", "/scratch <player> - Scratch a player"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.attention", "/attention <player> - Attract a player's attention"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nightvision", "/nightvision [player] - Gain night vision effect"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.jumpboost", "/jumpboost [player] - Gain jump boost effect"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.swiftsneak", "/swiftsneak [player] - Gain swift sneak effect"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.health", "/health - Neko restores own and owner's health"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekox", "/nekox - View plugin information"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_reload", "/nekox reload - Reload configuration"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_version", "/nekox version - View plugin version"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekoset", "/nekoset <player> <true/false> - Set player's neko status (requires admin permission)"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_language", "/nekox language <language> - Change plugin language"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_placeholders", "/nekox placeholders - View placeholder list"));
     }
     
     /**
@@ -131,9 +178,9 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         // 检查PlaceholderAPI是否已安装
         boolean placeholderAPIInstalled = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
         
-        // 获取所有占位符列表
-        List<String> allPlaceholders = NekoXPlaceholderExpansion.getAllPlaceholders();
-        int totalPlaceholders = allPlaceholders.size();
+        // 直接定义占位符列表，避免依赖PlaceholderAPI类
+        List<String> placeholders = Arrays.asList("is_neko", "humans", "nekos");
+        int totalPlaceholders = placeholders.size();
         int registeredPlaceholders = placeholderAPIInstalled ? totalPlaceholders : 0;
         
         // 发送占位符列表信息
@@ -148,7 +195,7 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         
         // 显示所有占位符
         sender.sendMessage("§a所有占位符：");
-        for (String placeholder : allPlaceholders) {
+        for (String placeholder : placeholders) {
             String status = placeholderAPIInstalled ? "§a✓" : "§c✗";
             sender.sendMessage("§e- %nekox_" + placeholder + "% " + status);
         }
@@ -185,7 +232,7 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
             }
             // 对于language子命令，提供语言列表补全
             else if (args.length == 2 && (args[0].equalsIgnoreCase("language") || args[0].equalsIgnoreCase("lang"))) {
-                Set<String> availableLanguages = languageManager.getAvailableLanguages();
+                Set<String> availableLanguages = languageManager != null ? languageManager.getAvailableLanguages() : java.util.Set.of("English", "简体中文");
                 for (String language : availableLanguages) {
                     if (language.toLowerCase().startsWith(args[1].toLowerCase())) {
                         completions.add(language);

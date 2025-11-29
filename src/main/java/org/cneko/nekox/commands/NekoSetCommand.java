@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.LanguageManager;
 import org.cneko.nekox.utils.NekoManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,20 +29,20 @@ public class NekoSetCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // 检查命令发送者是否有权限
         if (!sender.hasPermission("nekox.admin")) {
-            sender.sendMessage(languageManager.getMessage("commands.no_permission"));
+            sender.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.no_permission", "You don't have permission to execute this command!"));
             return true;
         }
         
         // 检查参数数量
         if (args.length < 2) {
-            sender.sendMessage(languageManager.getMessage("commands.help.nekoset"));
+            sender.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.help.nekoset", "Usage: /nekoset <player> <true|false>"));
             return true;
         }
         
         // 获取目标玩家
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(languageManager.getMessage("commands.player_not_found"));
+            sender.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.player_not_found", "Player not found!"));
             return true;
         }
         
@@ -50,7 +51,7 @@ public class NekoSetCommand implements CommandExecutor, TabCompleter {
         try {
             isNeko = Boolean.parseBoolean(args[1]);
         } catch (Exception e) {
-            sender.sendMessage(languageManager.getMessage("commands.nekoset.invalid_param"));
+            sender.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.invalid_param", "Invalid parameter! Use true or false."));
             return true;
         }
         
@@ -62,23 +63,27 @@ public class NekoSetCommand implements CommandExecutor, TabCompleter {
             if (isNeko) {
                 HashMap<String, String> replacements1 = new HashMap<>();
                 replacements1.put("player", target.getName());
-                sender.sendMessage(languageManager.getMessage("commands.nekoset.set_to_neko", replacements1));
-                target.sendMessage(languageManager.getMessage("commands.nekoset.set_to_neko_target"));
+                String setToNekoMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.set_to_neko", "Successfully set {player} to neko!");
+                sender.sendMessage(SafeMessageUtils.replacePlaceholdersSafe(setToNekoMessage, replacements1));
+                target.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.set_to_neko_target", "You are now a neko!"));
             } else {
                 HashMap<String, String> replacements2 = new HashMap<>();
                 replacements2.put("player", target.getName());
-                sender.sendMessage(languageManager.getMessage("commands.nekoset.set_to_human", replacements2));
-                target.sendMessage(languageManager.getMessage("commands.nekoset.set_to_human_target"));
+                String setToHumanMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.set_to_human", "Successfully set {player} to human!");
+                sender.sendMessage(SafeMessageUtils.replacePlaceholdersSafe(setToHumanMessage, replacements2));
+                target.sendMessage(SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.set_to_human_target", "You are now a human!"));
             }
         } else {
             if (isNeko) {
                 HashMap<String, String> replacements3 = new HashMap<>();
                 replacements3.put("player", target.getName());
-                sender.sendMessage(languageManager.getMessage("commands.nekoset.already_neko", replacements3));
+                String alreadyNekoMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.already_neko", "{player} is already a neko!");
+                sender.sendMessage(SafeMessageUtils.replacePlaceholdersSafe(alreadyNekoMessage, replacements3));
             } else {
                 HashMap<String, String> replacements4 = new HashMap<>();
                 replacements4.put("player", target.getName());
-                sender.sendMessage(languageManager.getMessage("commands.nekoset.already_not_neko", replacements4));
+                String alreadyHumanMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.nekoset.already_not_neko", "{player} is already a human!");
+                sender.sendMessage(SafeMessageUtils.replacePlaceholdersSafe(alreadyHumanMessage, replacements4));
             }
         }
         

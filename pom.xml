@@ -6,7 +6,7 @@
 
     <groupId>org.cneko</groupId>
     <artifactId>NekoX</artifactId>
-    <version>5.0-ProMax+++</version>
+    <version>5.0-ProMax+++（Emergency-fix）</version>
     <packaging>jar</packaging>
 
     <name>NekoX-Plugin</name>
@@ -115,10 +115,6 @@
             <url>https://repo.codemc.org/repository/maven-public</url>
         </repository>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-        <repository>
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
@@ -155,6 +151,14 @@
             <artifactId>placeholderapi</artifactId>
             <version>2.11.5</version>
             <scope>provided</scope>
+        </dependency>
+        
+        <!-- SQLite JDBC Driver -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.1.0</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

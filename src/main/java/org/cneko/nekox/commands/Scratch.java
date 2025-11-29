@@ -8,6 +8,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.LanguageManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,30 +25,31 @@ public class Scratch implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.only_player"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.only_player", "Only players can use this command!"));
             return true;
         }
         
         Player player = (Player) sender;
         
         if (args.length == 0) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.help.scratch"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.scratch", "Usage: /scratch <player>"));
             return true;
         }
         
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.player_not_found"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.player_not_found", "Player not found!"));
             return true;
         }
         
         // 发送消息给玩家
         HashMap<String, String> replacements = new HashMap<>();
         replacements.put("player", target.getName());
-        player.sendMessage("§e" + languageManager.replacePlaceholders(languageManager.getMessage("commands.scratch.success"), replacements));
+        String scratchMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.scratch.success", "You scratched {player}!");
+        player.sendMessage("§e" + SafeMessageUtils.replacePlaceholdersSafe(scratchMessage, replacements));
         
         replacements.put("player", player.getName());
-        target.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.scratch.success"), replacements));
+        target.sendMessage("§a" + SafeMessageUtils.replacePlaceholdersSafe(scratchMessage, replacements));
         
         // 造成少量伤害
         target.damage(1.0);

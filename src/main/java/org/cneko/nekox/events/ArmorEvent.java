@@ -24,8 +24,8 @@ public class ArmorEvent implements Listener {
     private final Map<Player, Integer> leatherArmorCount = new HashMap<>();
     private final Set<Player> hasSpeedBonus = new HashSet<>();
     
-    public ArmorEvent() {
-        this.plugin = NekoX.getInstance();
+    public ArmorEvent(NekoX plugin) {
+        this.plugin = plugin;
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

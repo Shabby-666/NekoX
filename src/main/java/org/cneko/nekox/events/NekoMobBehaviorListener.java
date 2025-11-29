@@ -8,7 +8,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.cneko.nekox.NekoX;
-import org.cneko.nekox.utils.LanguageManager;
 
 public class NekoMobBehaviorListener implements Listener {
     private final NekoX plugin;

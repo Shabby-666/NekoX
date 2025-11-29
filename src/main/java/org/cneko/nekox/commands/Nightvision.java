@@ -11,6 +11,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.LanguageManager;
 import org.cneko.nekox.utils.NekoManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,7 @@ public class Nightvision implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage("§c" + languageManager.getMessage("commands.only_player"));
+                sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.only_player", "Only players can use this command!"));
                 return true;
             }
             
@@ -38,7 +39,7 @@ public class Nightvision implements CommandExecutor, TabCompleter {
             
             // 检查玩家是否是猫娘
             if (!nekoManager.isNeko(player)) {
-                player.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+                player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.notneko", "You are not a neko!"));
                 return true;
             }
             
@@ -48,13 +49,13 @@ public class Nightvision implements CommandExecutor, TabCompleter {
         
         Player target = plugin.getServer().getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.player_not_found"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.player_not_found", "Player not found!"));
             return true;
         }
         
         // 检查目标玩家是否是猫娘
         if (!nekoManager.isNeko(target)) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.notneko", "Target player is not a neko!"));
             return true;
         }
         
@@ -62,7 +63,8 @@ public class Nightvision implements CommandExecutor, TabCompleter {
         if (sender instanceof Player && sender != target) {
             HashMap<String, String> replacements = new HashMap<>();
             replacements.put("player", target.getName());
-            sender.sendMessage("§e" + languageManager.replacePlaceholders(languageManager.getMessage("commands.pat.success"), replacements));
+            String message = SafeMessageUtils.getSafeMessage(languageManager, "commands.nightvision.success_other", "You gave night vision to {player}!");
+            sender.sendMessage("§e" + SafeMessageUtils.replacePlaceholdersSafe(message, replacements));
         }
         
         return true;
@@ -70,7 +72,7 @@ public class Nightvision implements CommandExecutor, TabCompleter {
     
     private void applyNightvision(Player player) {
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 6000, 0, false, false));
-        player.sendMessage("§e" + languageManager.getMessage("commands.nightvision.success"));
+        player.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.nightvision.success", "Night vision effect applied!"));
     }
     
     @Override

@@ -7,15 +7,14 @@ import org.bukkit.entity.Player;
 import org.cneko.nekox.NekoX;
 import org.cneko.nekox.utils.NekoManager;
 import org.cneko.nekox.utils.LanguageManager;
+import org.cneko.nekox.utils.SafeMessageUtils;
 import java.util.HashMap;
 
 public class Purr implements CommandExecutor {
-    private final NekoX plugin;
     private final NekoManager nekoManager;
     private final LanguageManager languageManager;
     
     public Purr(NekoX plugin) {
-        this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
         this.languageManager = plugin.getLanguageManager();
     }
@@ -23,7 +22,7 @@ public class Purr implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c" + languageManager.getMessage("commands.only_player"));
+            sender.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.only_player", "Only players can use this command!"));
             return true;
         }
         
@@ -31,12 +30,12 @@ public class Purr implements CommandExecutor {
         
         // 检查玩家是否是猫娘
         if (!nekoManager.isNeko(player)) {
-            player.sendMessage("§c" + languageManager.getMessage("commands.health.notneko"));
+            player.sendMessage("§c" + SafeMessageUtils.getSafeMessage(languageManager, "commands.health.notneko", "You are not a neko!"));
             return true;
         }
         
         // 发送消息给玩家和周围的人
-        player.sendMessage("§e" + languageManager.getMessage("commands.purr.success"));
+        player.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.purr.success", "You purr cutely!"));
         player.getWorld().playSound(player.getLocation(), "entity.cat.purr", 1.0f, 1.0f);
 
         // 通知周围的玩家
@@ -44,7 +43,8 @@ public class Purr implements CommandExecutor {
             if (nearby != player && nearby.getLocation().distance(player.getLocation()) <= 10) {
                 HashMap<String, String> replacements = new HashMap<>();
                 replacements.put("player", player.getName());
-                nearby.sendMessage("§a" + languageManager.replacePlaceholders(languageManager.getMessage("commands.pat.success"), replacements));
+                String purrMessage = SafeMessageUtils.getSafeMessage(languageManager, "commands.purr.heard", "{player} is purring cutely!");
+                nearby.sendMessage("§a" + SafeMessageUtils.replacePlaceholdersSafe(purrMessage, replacements));
             }
         }
         

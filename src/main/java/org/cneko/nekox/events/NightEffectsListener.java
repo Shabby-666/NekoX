@@ -18,8 +18,8 @@ public class NightEffectsListener implements Listener {
     private final NekoManager nekoManager;
     private int taskId;
 
-    public NightEffectsListener() {
-        this.plugin = NekoX.getInstance();
+    public NightEffectsListener(NekoX plugin) {
+        this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
         startNightEffectsTask();
     }

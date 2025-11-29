@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
 
 public class PlayerConfigManager {
     private final NekoX plugin;
@@ -24,9 +22,24 @@ public class PlayerConfigManager {
 
     public PlayerConfigManager(NekoX plugin) {
         this.plugin = plugin;
-        initDatabase();
-        loadAllConfigs();
-        loadAllNekoData();
+        this.connection = null; // 初始化为null
+        
+        try {
+            initDatabase();
+            if (connection != null) {
+                loadAllConfigs();
+                loadAllNekoData();
+                plugin.getLogger().info("玩家配置管理器初始化成功");
+            } else {
+                plugin.getLogger().warning("数据库连接失败，将使用内存模式运行");
+                initializeMemoryMode();
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("初始化玩家配置管理器失败: " + e.getMessage());
+            e.printStackTrace();
+            plugin.getLogger().warning("将使用内存模式运行");
+            initializeMemoryMode();
+        }
     }
 
     private void initDatabase() {
@@ -39,43 +52,77 @@ public class PlayerConfigManager {
             File dbFile = new File(dataFolder, "PlayerConfigs.db");
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
 
-            // 创建玩家配置表
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS player_configs (" +
-                    "player_name TEXT PRIMARY KEY, " +
-                    "notice_enabled INTEGER DEFAULT 1, " +
-                    "is_neko INTEGER DEFAULT 0);";
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute(createTableSQL);
-            }
+            if (connection != null && !connection.isClosed()) {
+                plugin.getLogger().info("数据库连接成功");
 
-            // 创建猫娘主人关系表
-            String createOwnersTableSQL = "CREATE TABLE IF NOT EXISTS neko_owners (" +
-                    "neko_name TEXT, " +
-                    "owner_name TEXT, " +
-                    "PRIMARY KEY (neko_name, owner_name));";
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute(createOwnersTableSQL);
-            }
+                // 创建玩家配置表
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS player_configs (" +
+                        "player_name TEXT PRIMARY KEY, " +
+                        "notice_enabled INTEGER DEFAULT 1, " +
+                        "is_neko INTEGER DEFAULT 0);";
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute(createTableSQL);
+                }
 
-            // 创建主人申请关系表
-            String createRequestsTableSQL = "CREATE TABLE IF NOT EXISTS owner_requests (" +
-                    "requester_name TEXT, " +
-                    "neko_name TEXT, " +
-                    "PRIMARY KEY (requester_name, neko_name));";
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute(createRequestsTableSQL);
+                // 创建猫娘主人关系表
+                String createOwnersTableSQL = "CREATE TABLE IF NOT EXISTS neko_owners (" +
+                        "neko_name TEXT, " +
+                        "owner_name TEXT, " +
+                        "PRIMARY KEY (neko_name, owner_name));";
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute(createOwnersTableSQL);
+                }
+
+                // 创建主人申请关系表
+                String createRequestsTableSQL = "CREATE TABLE IF NOT EXISTS owner_requests (" +
+                        "requester_name TEXT, " +
+                        "neko_name TEXT, " +
+                        "PRIMARY KEY (requester_name, neko_name));";
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute(createRequestsTableSQL);
+                }
+            } else {
+                plugin.getLogger().warning("数据库连接失败");
+                connection = null;
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("初始化数据库失败: " + e.getMessage());
+            connection = null;
+        } catch (Exception e) {
+            plugin.getLogger().severe("数据库初始化异常: " + e.getMessage());
+            connection = null;
         }
+    }
+    
+    /**
+     * 初始化内存模式，当数据库不可用时使用
+     */
+    private void initializeMemoryMode() {
+        plugin.getLogger().info("初始化内存模式，玩家数据将在插件重启后丢失");
+        // 清空缓存，使用内存存储
+        noticeEnabledCache.clear();
+        isNekoCache.clear();
+        nekoOwnersCache.clear();
+        ownerRequestsCache.clear();
     }
 
     public void setNoticeEnabled(Player player, boolean enabled) {
+        // 添加空指针检查
+        if (player == null) {
+            return;
+        }
+        
         final String finalPlayerName = player.getName().toLowerCase();
         noticeEnabledCache.put(finalPlayerName, enabled);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // 添加连接检查
+            if (connection == null) {
+                plugin.getLogger().severe("数据库连接为空，无法设置玩家通知状态");
+                return;
+            }
+            
             try {
                 String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, ?, " +
                         "(SELECT is_neko FROM player_configs WHERE player_name = ? UNION SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)));";
@@ -116,6 +163,11 @@ public class PlayerConfigManager {
     }
 
     public boolean isNoticeEnabled(Player player) {
+        // 添加空指针检查
+        if (player == null) {
+            return true; // 默认启用
+        }
+        
         String playerName = player.getName().toLowerCase();
         if (noticeEnabledCache.containsKey(playerName)) {
             return noticeEnabledCache.get(playerName);
@@ -130,6 +182,12 @@ public class PlayerConfigManager {
         final String finalPlayerName = playerName.toLowerCase();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
+                // 检查连接是否可用
+                if (connection == null || connection.isClosed()) {
+                    plugin.getLogger().warning("数据库连接不可用，跳过加载通知状态");
+                    return;
+                }
+                
                 String sql = "SELECT notice_enabled FROM player_configs WHERE player_name = ?";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                     pstmt.setString(1, finalPlayerName);
@@ -141,6 +199,8 @@ public class PlayerConfigManager {
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("查询玩家通知状态失败: " + e.getMessage());
+            } catch (Exception e) {
+                plugin.getLogger().warning("加载通知状态时发生异常: " + e.getMessage());
             }
         });
     }
@@ -149,11 +209,22 @@ public class PlayerConfigManager {
      * 设置玩家为猫娘（通过玩家对象）
      */
     public void setNeko(Player player, boolean isNeko) {
+        // 添加空指针检查
+        if (player == null) {
+            return;
+        }
+        
         final String finalPlayerName = player.getName().toLowerCase();
         isNekoCache.put(finalPlayerName, isNeko);
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // 添加连接检查
+            if (connection == null) {
+                plugin.getLogger().severe("数据库连接为空，无法设置玩家猫娘状态");
+                return;
+            }
+            
             try {
                 String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, " +
                         "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?);";
@@ -222,6 +293,11 @@ public class PlayerConfigManager {
      * 检查玩家是否是猫娘（通过玩家对象）
      */
     public boolean isNeko(Player player) {
+        // 添加空指针检查
+        if (player == null) {
+            return false; // 默认不是猫娘
+        }
+        
         String playerName = player.getName().toLowerCase();
         if (isNekoCache.containsKey(playerName)) {
             return isNekoCache.get(playerName);
@@ -269,6 +345,11 @@ public class PlayerConfigManager {
      * 为主人添加猫娘（通过玩家对象）
      */
     public void addOwner(Player neko, Player owner) {
+        // 添加空指针检查
+        if (neko == null || owner == null) {
+            return;
+        }
+        
         if (!isNeko(neko)) {
             return; // 不是猫娘
         }
@@ -282,6 +363,12 @@ public class PlayerConfigManager {
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // 添加连接检查
+            if (connection == null) {
+                plugin.getLogger().severe("数据库连接为空，无法添加主人关系");
+                return;
+            }
+            
             try {
                 String sql = "INSERT OR IGNORE INTO neko_owners (neko_name, owner_name) VALUES (?, ?)";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -365,6 +452,11 @@ public class PlayerConfigManager {
      * 移除主人与猫娘的关系（通过玩家对象）
      */
     public void removeOwner(Player neko, Player owner) {
+        // 添加空指针检查
+        if (neko == null || owner == null) {
+            return;
+        }
+        
         final String finalNekoName = neko.getName().toLowerCase();
         final String finalOwnerName = owner.getName().toLowerCase();
 
@@ -377,6 +469,12 @@ public class PlayerConfigManager {
 
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // 添加连接检查
+            if (connection == null) {
+                plugin.getLogger().severe("数据库连接为空，无法移除主人关系");
+                return;
+            }
+            
             try {
                 String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

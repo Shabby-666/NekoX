@@ -22,26 +22,77 @@ public class LanguageManager {
     public LanguageManager(NekoX plugin) {
         this.plugin = plugin;
         
-        // 创建Languages文件夹
+        // 先初始化必要的文件对象，避免在异常情况下未初始化
         this.languagesDir = new File(plugin.getDataFolder(), "Languages");
-        if (!languagesDir.exists()) {
-            languagesDir.mkdirs();
-        }
-        
-        // 创建Language.yml配置文件
         this.languageConfigFile = new File(plugin.getDataFolder(), "Language.yml");
-        if (!languageConfigFile.exists()) {
-            createDefaultLanguageConfig();
+        
+        try {
+            // 确保插件数据文件夹存在
+            if (!plugin.getDataFolder().exists()) {
+                plugin.getDataFolder().mkdirs();
+            }
+            
+            // 创建Languages文件夹
+            if (!languagesDir.exists()) {
+                languagesDir.mkdirs();
+            }
+            
+            // 创建Language.yml配置文件
+            if (!languageConfigFile.exists()) {
+                createDefaultLanguageConfig();
+            }
+            
+            languageConfig = YamlConfiguration.loadConfiguration(languageConfigFile);
+            defaultLanguage = languageConfig.getString("Language", "English");
+            
+            // 加载默认语言文件
+            loadDefaultLanguageFiles();
+            
+            // 加载配置的语言列表
+            loadLanguages();
+            
+            plugin.getLogger().info("语言管理器初始化成功！默认语言: " + defaultLanguage);
+        } catch (Exception e) {
+            plugin.getLogger().severe("语言管理器初始化失败，插件将以英文模式运行: " + e.getMessage());
+            // 即使失败也要确保基础功能可用
+            createFallbackLanguageConfig();
         }
-        
-        languageConfig = YamlConfiguration.loadConfiguration(languageConfigFile);
-        defaultLanguage = languageConfig.getString("Language", "English");
-        
-        // 加载默认语言文件
-        loadDefaultLanguageFiles();
-        
-        // 加载配置的语言列表
-        loadLanguages();
+    }
+    
+    /**
+     * 创建后备语言配置，确保即使文件初始化失败也能提供基础消息
+     */
+    private void createFallbackLanguageConfig() {
+        try {
+            // 创建内存中的后备配置
+            FileConfiguration fallbackConfig = new org.bukkit.configuration.file.YamlConfiguration();
+            
+            // 基础插件消息
+            fallbackConfig.set("plugin.enabled", "NekoX plugin has been successfully enabled!");
+            fallbackConfig.set("plugin.disabled", "NekoX plugin has been successfully disabled!");
+            fallbackConfig.set("plugin.name", "NekoX");
+            
+            // 命令消息
+            fallbackConfig.set("commands.only_player", "Only players can use this command!");
+            fallbackConfig.set("commands.health.notneko", "You are not a neko!");
+            fallbackConfig.set("commands.player_not_found", "Player not found!");
+            fallbackConfig.set("commands.pat.success", "You patted {player}!");
+            fallbackConfig.set("commands.lovebite.success", "You gave {player} a love bite!");
+            fallbackConfig.set("commands.earscratch.success", "You scratched {player}'s ears!");
+            fallbackConfig.set("commands.purr.success", "You made a cute purring sound!");
+            fallbackConfig.set("commands.hiss.success", "You hissed at {player}!");
+            fallbackConfig.set("commands.scratch.success", "You scratched {player}!");
+            fallbackConfig.set("commands.attention.success", "You attracted {player}'s attention!");
+            fallbackConfig.set("commands.nightvision.success", "You gained night vision!");
+            fallbackConfig.set("commands.jumpboost.success", "You gained jump boost effect!");
+            fallbackConfig.set("commands.swiftsneak.success", "You gained swift sneak effect!");
+            
+            // 将后备配置添加到内存映射中
+            languageFiles.put("English", fallbackConfig);
+            plugin.getLogger().info("后备语言配置已创建，插件将以基础英文模式运行");
+        } catch (Exception e) {
+            plugin.getLogger().severe("创建后备语言配置失败: " + e.getMessage());
+        }
     }
     
     private void createDefaultLanguageConfig() {
@@ -49,7 +100,7 @@ public class LanguageManager {
             Files.createFile(languageConfigFile.toPath());
             FileConfiguration config = YamlConfiguration.loadConfiguration(languageConfigFile);
             config.set("Language", "English");
-            config.set("Languages", new String[]{"English", "简体中文"});
+            config.set("Languages", java.util.Arrays.asList("English", "简体中文"));
             config.save(languageConfigFile);
         } catch (IOException e) {
             plugin.getLogger().severe("无法创建Language.yml配置文件: " + e.getMessage());
@@ -264,6 +315,10 @@ public class LanguageManager {
             // Player notice title messages
             config.set("player_notice.title", "Nearby Players");
             
+            // 爬墙命令消息
+            config.set("commands.climb.enabled", "Climbing feature enabled!");
+            config.set("commands.climb.disabled", "Climbing feature disabled!");
+            
             config.save(englishFile);
         } catch (IOException e) {
             plugin.getLogger().severe("无法创建English.yml语言文件: " + e.getMessage());
@@ -438,6 +493,10 @@ public class LanguageManager {
             // Player notice title messages
             config.set("player_notice.title", "附近玩家");
             
+            // 爬墙命令消息
+            config.set("commands.climb.enabled", "爬墙功能已开启！");
+            config.set("commands.climb.disabled", "爬墙功能已关闭！");
+            
             config.save(chineseFile);
         } catch (IOException e) {
             plugin.getLogger().severe("无法创建简体中文.yml语言文件: " + e.getMessage());
@@ -456,20 +515,36 @@ public class LanguageManager {
     }
     
     public String getMessage(String key) {
+        if (key == null || key.trim().isEmpty()) {
+            return "";
+        }
         return getMessage(key, defaultLanguage, null);
     }
     
     public String getMessage(String key, String language) {
+        if (key == null || key.trim().isEmpty()) {
+            return "";
+        }
+        if (language == null || language.trim().isEmpty()) {
+            language = defaultLanguage;
+        }
         return getMessage(key, language, null);
     }
     
     public String getMessage(String key, Map<String, String> placeholders) {
+        if (key == null || key.trim().isEmpty()) {
+            return "";
+        }
         return getMessage(key, defaultLanguage, placeholders);
     }
     
     public String getMessage(String key, String language, Map<String, String> placeholders) {
+        if (key == null || key.trim().isEmpty()) {
+            return "";
+        }
+        
         // 检查语言是否存在
-        if (!languageFiles.containsKey(language)) {
+        if (language == null || language.trim().isEmpty() || !languageFiles.containsKey(language)) {
             language = defaultLanguage;
         }
         
@@ -479,14 +554,16 @@ public class LanguageManager {
             if (!language.equals(defaultLanguage) && languageFiles.containsKey(defaultLanguage)) {
                 config = languageFiles.get(defaultLanguage);
                 if (config != null && config.contains(key)) {
-                    return replacePlaceholders(config.getString(key), placeholders);
+                    String message = config.getString(key);
+                    return message != null ? replacePlaceholders(message, placeholders) : key;
                 }
             }
             // 如果都找不到，返回键本身
             return key;
         }
         
-        return replacePlaceholders(config.getString(key), placeholders);
+        String message = config.getString(key);
+        return message != null ? replacePlaceholders(message, placeholders) : key;
     }
     
     public String replacePlaceholders(String message, Map<String, String> placeholders) {

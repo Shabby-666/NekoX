@@ -93,7 +93,7 @@ public class StressEffectListener implements Listener {
             49, // 等级50（因为Bukkit中等级从0开始计数，所以50级是49）
             false, // 隐藏粒子效果
             false // 隐藏图标效果
-        ), true); // 强制覆盖现有效果
+        )); // 应用效果
         
         // 设置冷却时间
         skillManager.setCooldown(player, SkillManager.SkillType.STRESS_PASSIVE);
@@ -101,14 +101,14 @@ public class StressEffectListener implements Listener {
         // 发送聊天消息提醒
         player.sendMessage("§c生命值低于6，已触发应激被动！喵~");
         
-        // 发送标题提醒
-        player.sendTitle(
-            "§c应激状态", // 主标题
-            "§e获得力量50效果！喵~", // 副标题
-            10, // 淡入时间（ticks）
-            40, // 停留时间（ticks）
-            10  // 淡出时间（ticks）
-        );
+        // 发送标题提醒（使用Bukkit原生方法）
+        // 标题时间常量（ticks）
+        final int FADE_IN = 10;    // 淡入时间
+        final int STAY = 40;       // 停留时间
+        final int FADE_OUT = 10;   // 淡出时间
+        
+        // 使用彩色代码替代MiniMessage
+        player.sendTitle("§c应激状态", "§e获得力量50效果！喵~", FADE_IN, STAY, FADE_OUT);
     }
     
     /**

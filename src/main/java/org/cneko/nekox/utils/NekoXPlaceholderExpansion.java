@@ -14,11 +14,9 @@ import java.util.Set;
 public class NekoXPlaceholderExpansion extends PlaceholderExpansion {
 
     private final NekoX plugin;
-    private final NekoManager nekoManager;
 
     public NekoXPlaceholderExpansion(NekoX plugin) {
         this.plugin = plugin;
-        this.nekoManager = plugin.getNekoManager();
     }
 
     @Override
@@ -37,6 +35,11 @@ public class NekoXPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     @Override
+    public @NotNull String getDescription() {
+        return "NekoX Placeholder Expansion for PlaceholderAPI"; // 添加必要的描述方法
+    }
+
+    @Override
     public boolean persist() {
         return true; // 让扩展在PlaceholderAPI重载时仍然保持注册状态
     }
@@ -49,6 +52,12 @@ public class NekoXPlaceholderExpansion extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, String identifier) {
         if (player == null) {
+            return "";
+        }
+        
+        // 获取NekoManager实例，避免在构造函数中依赖未初始化的组件
+        NekoManager nekoManager = plugin.getNekoManager();
+        if (nekoManager == null) {
             return "";
         }
 
@@ -73,12 +82,14 @@ public class NekoXPlaceholderExpansion extends PlaceholderExpansion {
             Set<Player> nekoPlayers = nekoManager.getNekoPlayers();
             List<String> nekoNames = new ArrayList<>();
             for (Player nekoPlayer : nekoPlayers) {
-                nekoNames.add(nekoPlayer.getName());
+                if (nekoPlayer != null) {
+                    nekoNames.add(nekoPlayer.getName());
+                }
             }
             return String.join(", ", nekoNames);
         }
 
-        return null; // 如果占位符不存在，则返回null
+        return ""; // 如果占位符不存在，则返回空字符串而不是null
     }
     
     /**

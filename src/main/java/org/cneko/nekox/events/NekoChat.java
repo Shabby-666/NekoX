@@ -13,8 +13,8 @@ public class NekoChat implements Listener {
     private final NekoX plugin;
     private final NekoManager nekoManager;
     
-    public NekoChat() {
-        this.plugin = NekoX.getInstance();
+    public NekoChat(NekoX plugin) {
+        this.plugin = plugin;
         this.nekoManager = plugin.getNekoManager();
     }
     
@@ -33,6 +33,7 @@ public class NekoChat implements Listener {
             return; // 不是猫娘，不应用聊天效果
         }
         
+        // 获取消息内容
         String message = event.getMessage();
         
         // 添加猫娘聊天前缀和后缀
@@ -49,7 +50,13 @@ public class NekoChat implements Listener {
             }
         }
         
-        // 设置新的聊天格式
-        event.setFormat(prefix + player.getDisplayName() + "§f: " + message + suffix);
+        // 创建新的聊天格式
+        String format = prefix + player.getName() + "§f: " + message + suffix;
+        
+        // 设置新的消息内容
+        event.setMessage(message);
+        
+        // 设置聊天格式
+        event.setFormat(format);
     }
 }

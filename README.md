@@ -126,6 +126,32 @@ NekoX is a fun Minecraft plugin that makes Minecraft more interesting! It allows
 
 **Simply put:** Nekos receive notifications about nearby players!
 
+### 📋 Placeholder System (Emergency-fix Version)
+
+- **New Command**: `/nekox placeholders` - Lists all available NekoX placeholders
+- **Enhanced Compatibility**: Works correctly even without PlaceholderAPI installed
+- **Better Error Handling**: Clear error messages when PlaceholderAPI is unavailable
+- **Status Display**: Shows registration status for each placeholder
+
+**Simply put:** More reliable placeholder system with improved user experience!
+
+### 🔧 Command System Enhancements (Emergency-fix Version)
+
+- **Message Localization**: Fixed issues to ensure proper message display in Chinese
+- **Improved Stability**: Optimized command execution flow for better code reliability
+- **Crash Prevention**: Enhanced error handling mechanisms
+- **Language Support**: Better default message fallback system
+
+**Simply put:** More stable commands with correct message display!
+
+### 🌐 Language System Improvements (Emergency-fix Version)
+
+- **Safe Message Access**: Using SafeMessageUtils for secure message retrieval
+- **Fallback System**: Better default messages when translations are missing
+- **Consistent Display**: Ensured all command messages show correctly in different language environments
+
+**Simply put:** Enhanced language support with more reliable message handling!
+
 ## 🌿 Catnip Detailed Usage Guide
 
 ### What is Catnip?
@@ -232,6 +258,35 @@ cat-nip:
 - `/nekox reload` - Reload plugin settings
 - `/nekoset player true/false` - Set player as neko
 - `/nekox language language` - Switch plugin language
+- `/nekox placeholders` - Display all available NekoX placeholders
+
+## New Features in Emergency-fix Version
+
+### 📋 Placeholder System Improvements
+
+- **New Command**: `/nekox placeholders` - Lists all available NekoX placeholders
+- **Enhanced Compatibility**: Works correctly even when PlaceholderAPI is not installed
+- **Better Error Handling**: Clear error messages when PlaceholderAPI is unavailable
+- **Status Display**: Shows registration status for each placeholder
+
+**Simple Description**: More reliable placeholder system with improved user experience!
+
+### 🔧 Command System Enhancements
+
+- **Message Localization**: Fixed issues to ensure proper message display in Chinese
+- **Improved Stability**: Optimized command execution flow for better code reliability
+- **Crash Prevention**: Enhanced error handling mechanisms
+- **Language Support**: Better default message fallback system
+
+**Simple Description**: More stable commands with correct message display!
+
+### 🌐 Language System Improvements
+
+- **Safe Message Access**: Using SafeMessageUtils for secure message retrieval
+- **Fallback System**: Better default messages when translations are missing
+- **Consistent Display**: Ensured all command messages show correctly in different language environments
+
+**Simple Description**: Enhanced language support with more reliable message handling!
 
 ## Configuration (Optional Settings)
 
