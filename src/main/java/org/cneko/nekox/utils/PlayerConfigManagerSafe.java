@@ -17,15 +17,18 @@ import java.util.HashSet;
  */
 public class PlayerConfigManagerSafe {
     private final NekoX plugin;
+    private final LanguageManager languageManager;
     private Connection connection;
     private final Map<String, Boolean> noticeEnabledCache = new HashMap<>();
     private final Map<String, Boolean> isNekoCache = new HashMap<>();
     private final Map<String, Set<String>> nekoOwnersCache = new HashMap<>(); // 猫娘与其主人的映射
     private final Map<String, Set<String>> ownerRequestsCache = new HashMap<>(); // 主人申请的映射（申请者 -> 被申请的猫娘）
+    private final Map<String, Boolean> tailPullEnabledCache = new HashMap<>(); // 尾巴拉扯功能开关状态
     private boolean memoryMode = false;
 
     public PlayerConfigManagerSafe(NekoX plugin) {
         this.plugin = plugin;
+        this.languageManager = plugin.getLanguageManager(); // 从plugin获取已初始化的语言管理器
         this.connection = null; // 初始化为null
         
         try {
@@ -33,17 +36,16 @@ public class PlayerConfigManagerSafe {
             if (connection != null && !connection.isClosed()) {
                 loadAllConfigs();
                 loadAllNekoData();
-                plugin.getLogger().info("玩家配置管理器初始化成功");
                 memoryMode = false;
             } else {
-                plugin.getLogger().warning("数据库连接失败，将使用内存模式运行");
+                plugin.getLogger().warning(languageManager.getMessage("database.connection_failed_memory"));
                 initializeMemoryMode();
                 memoryMode = true;
             }
         } catch (Exception e) {
-            plugin.getLogger().severe("初始化玩家配置管理器失败: " + e.getMessage());
+            plugin.getLogger().severe(languageManager.getMessage("database.init_manager_failed") + e.getMessage());
             e.printStackTrace();
-            plugin.getLogger().warning("将使用内存模式运行");
+            plugin.getLogger().warning(languageManager.getMessage("database.using_memory_mode"));
             initializeMemoryMode();
             memoryMode = true;
         }
@@ -54,9 +56,9 @@ public class PlayerConfigManagerSafe {
             // 检查SQLite驱动是否可用
             try {
                 Class.forName("org.sqlite.JDBC");
-                plugin.getLogger().info("SQLite JDBC驱动已加载");
+                plugin.getLogger().info(languageManager.getMessage("database.sqlite_driver_loaded"));
             } catch (ClassNotFoundException e) {
-                plugin.getLogger().severe("SQLite JDBC驱动未找到！请确保已添加sqlite-jdbc依赖");
+                plugin.getLogger().severe(languageManager.getMessage("database.sqlite_driver_not_found"));
                 connection = null;
                 return;
             }
@@ -64,41 +66,50 @@ public class PlayerConfigManagerSafe {
             File dataFolder = plugin.getDataFolder();
             if (!dataFolder.exists()) {
                 dataFolder.mkdirs();
-                plugin.getLogger().info("创建插件数据文件夹: " + dataFolder.getAbsolutePath());
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("path", dataFolder.getAbsolutePath());
+                plugin.getLogger().info(languageManager.getMessage("database.creating_data_folder", placeholders));
             }
 
             File dbFile = new File(dataFolder, "PlayerConfigs.db");
-            plugin.getLogger().info("数据库文件路径: " + dbFile.getAbsolutePath());
+            Map<String, String> pathPlaceholders = new HashMap<>();
+            pathPlaceholders.put("path", dbFile.getAbsolutePath());
+            plugin.getLogger().info(languageManager.getMessage("database.file_path", pathPlaceholders));
             
             // 检查数据库文件是否可写
             if (dbFile.exists() && !dbFile.canWrite()) {
-                plugin.getLogger().severe("数据库文件不可写: " + dbFile.getAbsolutePath());
+                plugin.getLogger().severe(languageManager.getMessage("database.file_not_writable", pathPlaceholders));
                 connection = null;
                 return;
             }
 
             String dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
-            plugin.getLogger().info("尝试连接数据库: " + dbUrl);
+            Map<String, String> urlPlaceholders = new HashMap<>();
+            urlPlaceholders.put("url", dbUrl);
+            plugin.getLogger().info(languageManager.getMessage("database.connecting", urlPlaceholders));
             
             connection = DriverManager.getConnection(dbUrl);
 
             if (connection != null && !connection.isClosed()) {
-                plugin.getLogger().info("数据库连接成功！");
+                plugin.getLogger().info(languageManager.getMessage("database.connected"));
 
                 // 启用外键约束
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute("PRAGMA foreign_keys = ON");
-                    plugin.getLogger().info("启用外键约束");
+                    plugin.getLogger().info(languageManager.getMessage("database.foreign_keys_enabled"));
                 }
 
                 // 创建玩家配置表
                 String createTableSQL = "CREATE TABLE IF NOT EXISTS player_configs (" +
                         "player_name TEXT PRIMARY KEY, " +
                         "notice_enabled INTEGER DEFAULT 1, " +
-                        "is_neko INTEGER DEFAULT 0);";
+                        "is_neko INTEGER DEFAULT 0, " +
+                        "tail_pull_enabled INTEGER DEFAULT 1);";
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute(createTableSQL);
-                    plugin.getLogger().info("创建/验证 player_configs 表");
+                    Map<String, String> tablePlaceholders = new HashMap<>();
+                    tablePlaceholders.put("table", "player_configs");
+                    plugin.getLogger().info(languageManager.getMessage("database.table_created", tablePlaceholders));
                 }
 
                 // 创建猫娘主人关系表
@@ -108,7 +119,9 @@ public class PlayerConfigManagerSafe {
                         "PRIMARY KEY (neko_name, owner_name));";
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute(createOwnersTableSQL);
-                    plugin.getLogger().info("创建/验证 neko_owners 表");
+                    Map<String, String> ownersTablePlaceholders = new HashMap<>();
+                    ownersTablePlaceholders.put("table", "neko_owners");
+                    plugin.getLogger().info(languageManager.getMessage("database.table_created", ownersTablePlaceholders));
                 }
 
                 // 创建主人申请关系表
@@ -118,23 +131,78 @@ public class PlayerConfigManagerSafe {
                         "PRIMARY KEY (requester_name, neko_name));";
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute(createRequestsTableSQL);
-                    plugin.getLogger().info("创建/验证 owner_requests 表");
+                    Map<String, String> requestsTablePlaceholders = new HashMap<>();
+                    requestsTablePlaceholders.put("table", "owner_requests");
+                    plugin.getLogger().info(languageManager.getMessage("database.table_created", requestsTablePlaceholders));
                 }
                 
-                plugin.getLogger().info("数据库初始化完成");
+                // 检查并修复 player_configs 表的列结构
+                checkAndFixPlayerConfigsTable();
+                
+                plugin.getLogger().info(languageManager.getMessage("database.initialized"));
             } else {
-                plugin.getLogger().severe("数据库连接失败：连接对象为null或已关闭");
+                plugin.getLogger().severe(languageManager.getMessage("database.connection_failed"));
                 connection = null;
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("数据库SQL错误: " + e.getMessage());
-            plugin.getLogger().severe("错误代码: " + e.getErrorCode());
-            plugin.getLogger().severe("SQL状态: " + e.getSQLState());
+            plugin.getLogger().severe(languageManager.getMessage("database.sql_error") + e.getMessage());
+            Map<String, String> codePlaceholders = new HashMap<>();
+            codePlaceholders.put("code", String.valueOf(e.getErrorCode()));
+            plugin.getLogger().severe(languageManager.getMessage("database.error_code", codePlaceholders));
+            Map<String, String> statePlaceholders = new HashMap<>();
+            statePlaceholders.put("state", e.getSQLState());
+            plugin.getLogger().severe(languageManager.getMessage("database.sql_state", statePlaceholders));
             connection = null;
         } catch (Exception e) {
-            plugin.getLogger().severe("数据库初始化异常: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            Map<String, String> exceptionPlaceholders = new HashMap<>();
+            exceptionPlaceholders.put("exception", e.getClass().getSimpleName());
+            exceptionPlaceholders.put("message", e.getMessage());
+            plugin.getLogger().severe(languageManager.getMessage("database.init_exception", exceptionPlaceholders));
             e.printStackTrace();
             connection = null;
+        }
+    }
+    
+    /**
+     * 检查并修复 player_configs 表的列结构
+     */
+    private void checkAndFixPlayerConfigsTable() {
+        try {
+            // 定义需要检查的列及其默认值
+            Map<String, String> requiredColumns = new HashMap<>();
+            requiredColumns.put("notice_enabled", "INTEGER DEFAULT 1");
+            requiredColumns.put("is_neko", "INTEGER DEFAULT 0");
+            requiredColumns.put("tail_pull_enabled", "INTEGER DEFAULT 1");
+            
+            // 获取表中已存在的列
+            Set<String> existingColumns = new HashSet<>();
+            try (ResultSet rs = connection.getMetaData().getColumns(null, null, "player_configs", null)) {
+                while (rs.next()) {
+                    existingColumns.add(rs.getString("COLUMN_NAME").toLowerCase());
+                }
+            }
+            
+            // 检查并添加缺失的列
+            for (Map.Entry<String, String> entry : requiredColumns.entrySet()) {
+                String columnName = entry.getKey();
+                String columnDefinition = entry.getValue();
+                
+                if (!existingColumns.contains(columnName.toLowerCase())) {
+                    // 添加缺失的列
+                    String alterSQL = "ALTER TABLE player_configs ADD COLUMN " + columnName + " " + columnDefinition;
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute(alterSQL);
+                        Map<String, String> columnPlaceholders = new HashMap<>();
+                        columnPlaceholders.put("column", columnName);
+                        plugin.getLogger().info(languageManager.getMessage("database.column_added", columnPlaceholders));
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            Map<String, String> errorPlaceholders = new HashMap<>();
+            errorPlaceholders.put("message", e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("database.table_check_error", errorPlaceholders));
         }
     }
     
@@ -142,12 +210,13 @@ public class PlayerConfigManagerSafe {
      * 初始化内存模式，当数据库不可用时使用
      */
     private void initializeMemoryMode() {
-        plugin.getLogger().info("初始化内存模式，玩家数据将在插件重启后丢失");
+        plugin.getLogger().info(languageManager.getMessage("database.memory_mode_initialized"));
         // 清空缓存，使用内存存储
         noticeEnabledCache.clear();
         isNekoCache.clear();
         nekoOwnersCache.clear();
         ownerRequestsCache.clear();
+        tailPullEnabledCache.clear();
         memoryMode = true;
     }
 
@@ -158,12 +227,12 @@ public class PlayerConfigManagerSafe {
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (memoryMode || connection == null) {
-                plugin.getLogger().info("内存模式或数据库不可用，跳过加载配置");
+                plugin.getLogger().info(languageManager.getMessage("database.skip_loading"));
                 return;
             }
             
             safeDatabaseOperation(() -> {
-                String sql = "SELECT player_name, notice_enabled, is_neko FROM player_configs";
+                String sql = "SELECT player_name, notice_enabled, is_neko, tail_pull_enabled FROM player_configs";
                 try (Statement stmt = connection.createStatement();
                      ResultSet rs = stmt.executeQuery(sql)) {
                     int count = 0;
@@ -171,11 +240,15 @@ public class PlayerConfigManagerSafe {
                         String playerName = rs.getString("player_name").toLowerCase();
                         boolean enabled = rs.getInt("notice_enabled") == 1;
                         boolean isNeko = rs.getInt("is_neko") == 1;
+                        boolean tailPullEnabled = rs.getInt("tail_pull_enabled") == 1;
                         noticeEnabledCache.put(playerName, enabled);
                         isNekoCache.put(playerName, isNeko);
+                        tailPullEnabledCache.put(playerName, tailPullEnabled);
                         count++;
                     }
-                    plugin.getLogger().info("加载了 " + count + " 个玩家配置");
+                    Map<String, String> countPlaceholders = new HashMap<>();
+                    countPlaceholders.put("count", String.valueOf(count));
+                    plugin.getLogger().info(languageManager.getMessage("database.loaded_configs", countPlaceholders));
                 }
                 return true;
             }, "加载所有配置失败");
@@ -189,7 +262,7 @@ public class PlayerConfigManagerSafe {
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (memoryMode || connection == null) {
-                plugin.getLogger().info("内存模式或数据库不可用，跳过加载猫娘关系");
+                plugin.getLogger().info(languageManager.getMessage("database.skip_loading"));
                 return;
             }
             
@@ -206,7 +279,9 @@ public class PlayerConfigManagerSafe {
                         nekoOwnersCache.get(nekoName).add(ownerName);
                         ownerCount++;
                     }
-                    plugin.getLogger().info("加载了 " + ownerCount + " 个主人关系");
+                    Map<String, String> ownerCountPlaceholders = new HashMap<>();
+                    ownerCountPlaceholders.put("count", String.valueOf(ownerCount));
+                    plugin.getLogger().info(languageManager.getMessage("database.loaded_owner_relations", ownerCountPlaceholders));
                 }
                 return true;
             }, "加载猫娘主人关系失败");
@@ -224,7 +299,9 @@ public class PlayerConfigManagerSafe {
                         ownerRequestsCache.get(requesterName).add(nekoName);
                         requestCount++;
                     }
-                    plugin.getLogger().info("加载了 " + requestCount + " 个主人申请");
+                    Map<String, String> requestCountPlaceholders = new HashMap<>();
+                    requestCountPlaceholders.put("count", String.valueOf(requestCount));
+                    plugin.getLogger().info(languageManager.getMessage("database.loaded_requests", requestCountPlaceholders));
                 }
                 return true;
             }, "加载主人申请关系失败");
@@ -255,11 +332,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "设置玩家通知状态失败")) {
                     // 数据库操作失败，数据仍保存在内存中
-                    plugin.getLogger().info("通知状态已保存到内存");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("设置通知状态时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "设置通知状态时发生异常: " + e.getMessage());
         }
     }
 
@@ -278,9 +355,9 @@ public class PlayerConfigManagerSafe {
             loadNoticeEnabledFromDatabase(playerName);
             return true; // 默认启用
         } catch (Exception e) {
-            plugin.getLogger().warning("检查通知状态时发生异常: " + e.getMessage());
-            return true;
-        }
+                plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查通知状态时发生异常: " + e.getMessage());
+                return true;
+            }
     }
 
     private void loadNoticeEnabledFromDatabase(String playerName) {
@@ -333,11 +410,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "设置玩家猫娘状态失败")) {
                     // 数据库操作失败，数据仍保存在内存中
-                    plugin.getLogger().info("猫娘状态已保存到内存");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("设置猫娘状态时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "设置猫娘状态时发生异常: " + e.getMessage());
         }
     }
 
@@ -365,7 +442,7 @@ public class PlayerConfigManagerSafe {
                 try {
                     loadPlayerConfig(playerName);
                 } catch (Exception e) {
-                    plugin.getLogger().warning("加载玩家配置失败: " + e.getMessage());
+                    plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "加载玩家配置失败: " + e.getMessage());
                     isNekoCache.put(playerName, false);
                 }
             }
@@ -373,7 +450,7 @@ public class PlayerConfigManagerSafe {
             // 返回缓存中的值，如果没有则默认为false
             return isNekoCache.getOrDefault(playerName, false);
         } catch (Exception e) {
-            plugin.getLogger().warning("检查玩家猫娘状态失败: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查玩家猫娘状态失败: " + e.getMessage());
             return false;
         }
     }
@@ -402,7 +479,7 @@ public class PlayerConfigManagerSafe {
                 try {
                     loadPlayerConfig(normalizedName);
                 } catch (Exception e) {
-                    plugin.getLogger().warning("加载玩家配置失败: " + e.getMessage());
+                    plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "加载玩家配置失败: " + e.getMessage());
                     isNekoCache.put(normalizedName, false);
                 }
             }
@@ -410,26 +487,124 @@ public class PlayerConfigManagerSafe {
             // 返回缓存中的值，如果没有则默认为false
             return isNekoCache.getOrDefault(normalizedName, false);
         } catch (Exception e) {
-            plugin.getLogger().warning("检查玩家猫娘状态失败: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查玩家猫娘状态失败: " + e.getMessage());
             return false;
         }
     }
 
     private void loadPlayerConfig(String playerName) {
         safeDatabaseOperation(() -> {
-            String sql = "SELECT is_neko FROM player_configs WHERE player_name = ?";
+            String sql = "SELECT is_neko, tail_pull_enabled FROM player_configs WHERE player_name = ?";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, playerName);
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
                     boolean isNeko = rs.getInt("is_neko") == 1;
+                    boolean tailPullEnabled = rs.getInt("tail_pull_enabled") == 1;
                     isNekoCache.put(playerName, isNeko);
+                    tailPullEnabledCache.put(playerName, tailPullEnabled);
                 } else {
                     isNekoCache.put(playerName, false);
+                    tailPullEnabledCache.put(playerName, true); // 默认开启
                 }
             }
             return true;
         }, "加载玩家配置失败");
+    }
+    
+    /**
+     * 设置玩家的尾巴拉扯功能开关状态
+     */
+    public void setTailPullEnabled(Player player, boolean enabled) {
+        if (player == null) {
+            return;
+        }
+        
+        try {
+            final String finalPlayerName = player.getName().toLowerCase();
+            tailPullEnabledCache.put(finalPlayerName, enabled);
+
+            // 异步执行数据库操作
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (!safeDatabaseOperation(() -> {
+                    String sql = "INSERT OR REPLACE INTO player_configs (player_name, tail_pull_enabled, notice_enabled, is_neko) VALUES (?, ?, " +
+                            "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), " +
+                            "(SELECT is_neko FROM player_configs WHERE player_name = ? UNION SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)))";
+                    try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                        pstmt.setString(1, finalPlayerName);
+                        pstmt.setInt(2, enabled ? 1 : 0);
+                        pstmt.setString(3, finalPlayerName);
+                        pstmt.setString(4, finalPlayerName);
+                        pstmt.setString(5, finalPlayerName);
+                        pstmt.setString(6, finalPlayerName);
+                        pstmt.executeUpdate();
+                    }
+                    return true;
+                }, "设置玩家尾巴拉扯功能开关状态失败")) {
+                    // 数据库操作失败，数据仍保存在内存中
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
+                }
+            });
+        } catch (Exception e) {
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "设置尾巴拉扯功能开关状态时发生异常: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 检查玩家的尾巴拉扯功能是否开启
+     */
+    public boolean isTailPullEnabled(Player player) {
+        if (player == null) {
+            return true; // 默认开启
+        }
+        
+        try {
+            String playerName = player.getName().toLowerCase();
+            
+            // 首先检查缓存
+            if (tailPullEnabledCache.containsKey(playerName)) {
+                return tailPullEnabledCache.get(playerName);
+            }
+            
+            // 如果是内存模式，直接返回默认值
+            if (memoryMode) {
+                tailPullEnabledCache.put(playerName, true); // 默认开启
+                return true;
+            }
+            
+            // 如果数据库连接可用，从数据库加载
+            if (connection != null) {
+                try {
+                    loadPlayerTailPullConfig(playerName);
+                } catch (Exception e) {
+                    plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "加载玩家尾巴拉扯配置失败: " + e.getMessage());
+                    tailPullEnabledCache.put(playerName, true); // 默认开启
+                }
+            }
+            
+            // 返回缓存中的值，如果没有则默认为true
+            return tailPullEnabledCache.getOrDefault(playerName, true);
+        } catch (Exception e) {
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查玩家尾巴拉扯功能开关状态失败: " + e.getMessage());
+            return true; // 默认开启
+        }
+    }
+    
+    private void loadPlayerTailPullConfig(String playerName) {
+        safeDatabaseOperation(() -> {
+            String sql = "SELECT tail_pull_enabled FROM player_configs WHERE player_name = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, playerName);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    boolean enabled = rs.getInt("tail_pull_enabled") == 1;
+                    tailPullEnabledCache.put(playerName, enabled);
+                } else {
+                    tailPullEnabledCache.put(playerName, true); // 默认开启
+                }
+            }
+            return true;
+        }, "加载玩家尾巴拉扯配置失败");
     }
 
     public void addOwner(Player neko, Player owner) {
@@ -440,12 +615,12 @@ public class PlayerConfigManagerSafe {
         addOwnerByName(neko.getName(), owner.getName());
         
         // 触发主人关系变更事件
-        try {
-            OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), owner.getName(), OwnerRelationshipEvent.RelationshipAction.ADD);
-            Bukkit.getPluginManager().callEvent(event);
-        } catch (Exception e) {
-            plugin.getLogger().warning("触发主人关系变更事件失败: " + e.getMessage());
-        }
+            try {
+                OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), owner.getName(), OwnerRelationshipEvent.RelationshipAction.ADD);
+                Bukkit.getPluginManager().callEvent(event);
+            } catch (Exception e) {
+                plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "触发主人关系变更事件失败: " + e.getMessage());
+            }
     }
 
     public void addOwnerByName(String nekoName, String ownerName) {
@@ -472,11 +647,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "添加主人关系失败")) {
                     // 数据库操作失败，关系仍保存在内存中
-                    plugin.getLogger().info("主人关系已保存到内存");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("添加主人关系时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "添加主人关系时发生异常: " + e.getMessage());
         }
     }
 
@@ -500,7 +675,7 @@ public class PlayerConfigManagerSafe {
             
             return owners;
         } catch (Exception e) {
-            plugin.getLogger().warning("获取主人列表时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "获取主人列表时发生异常: " + e.getMessage());
             return new HashSet<>();
         }
     }
@@ -514,7 +689,7 @@ public class PlayerConfigManagerSafe {
             Set<Player> owners = getOwners(neko);
             return owners.contains(owner);
         } catch (Exception e) {
-            plugin.getLogger().warning("检查主人关系时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查主人关系时发生异常: " + e.getMessage());
             return false;
         }
     }
@@ -536,7 +711,7 @@ public class PlayerConfigManagerSafe {
                 OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), requester.getName(), OwnerRelationshipEvent.RelationshipAction.REQUEST);
                 Bukkit.getPluginManager().callEvent(event);
             } catch (Exception e) {
-                plugin.getLogger().warning("触发主人申请事件失败: " + e.getMessage());
+                plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "触发主人申请事件失败: " + e.getMessage());
             }
 
             // 异步执行数据库操作
@@ -551,11 +726,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "发送主人申请失败")) {
                     // 数据库操作失败，申请仍保存在内存中
-                    plugin.getLogger().info("主人申请已保存到内存");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("发送主人申请时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "发送主人申请时发生异常: " + e.getMessage());
         }
     }
 
@@ -571,7 +746,7 @@ public class PlayerConfigManagerSafe {
             Set<String> requests = ownerRequestsCache.getOrDefault(requesterName, new HashSet<>());
             return requests.contains(nekoName);
         } catch (Exception e) {
-            plugin.getLogger().warning("检查主人申请时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "检查主人申请时发生异常: " + e.getMessage());
             return false;
         }
     }
@@ -593,10 +768,10 @@ public class PlayerConfigManagerSafe {
                 OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), requester.getName(), OwnerRelationshipEvent.RelationshipAction.ADD);
                 Bukkit.getPluginManager().callEvent(event);
             } catch (Exception e) {
-                plugin.getLogger().warning("触发接受主人申请事件失败: " + e.getMessage());
+                plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "触发接受主人申请事件失败: " + e.getMessage());
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("接受主人申请时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "接受主人申请时发生异常: " + e.getMessage());
         }
     }
 
@@ -627,11 +802,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "删除主人申请失败")) {
                     // 数据库操作失败，申请仍从内存中移除
-                    plugin.getLogger().info("主人申请已从内存中删除");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("拒绝主人申请时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "拒绝主人申请时发生异常: " + e.getMessage());
         }
     }
 
@@ -655,7 +830,7 @@ public class PlayerConfigManagerSafe {
                 OwnerRelationshipEvent event = new OwnerRelationshipEvent(neko.getName(), owner.getName(), OwnerRelationshipEvent.RelationshipAction.REMOVE);
                 Bukkit.getPluginManager().callEvent(event);
             } catch (Exception e) {
-                plugin.getLogger().warning("触发删除主人关系事件失败: " + e.getMessage());
+                plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "触发删除主人关系事件失败: " + e.getMessage());
             }
 
             // 异步执行数据库操作
@@ -670,11 +845,11 @@ public class PlayerConfigManagerSafe {
                     return true;
                 }, "删除主人关系失败")) {
                     // 数据库操作失败，关系仍从内存中移除
-                    plugin.getLogger().info("主人关系已从内存中删除");
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
             });
         } catch (Exception e) {
-            plugin.getLogger().warning("删除主人关系时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "删除主人关系时发生异常: " + e.getMessage());
         }
     }
 
@@ -686,10 +861,10 @@ public class PlayerConfigManagerSafe {
         try {
             return operation.execute();
         } catch (SQLException e) {
-            plugin.getLogger().severe(errorMessage + ": " + e.getMessage());
+            plugin.getLogger().severe("§dNekoX §e>> " + errorMessage + ": " + e.getMessage());
             return false;
         } catch (Exception e) {
-            plugin.getLogger().warning(errorMessage + "（异常）: " + e.getMessage());
+            plugin.getLogger().warning("§dNekoX §e>> " + errorMessage + "（异常）: " + e.getMessage());
             return false;
         }
     }
@@ -703,10 +878,12 @@ public class PlayerConfigManagerSafe {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                plugin.getLogger().info("数据库连接已关闭");
+                plugin.getLogger().info(languageManager.getMessage("database.connection_closed"));
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("关闭数据库连接失败: " + e.getMessage());
+            Map<String, String> errorPlaceholders = new HashMap<>();
+            errorPlaceholders.put("message", e.getMessage());
+            plugin.getLogger().severe(languageManager.getMessage("database.close_failed", errorPlaceholders));
         }
     }
 
@@ -732,7 +909,7 @@ public class PlayerConfigManagerSafe {
             
             return nekos;
         } catch (Exception e) {
-            plugin.getLogger().warning("获取猫娘列表时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "Failed to get nekos by owner: " + e.getMessage());
             return new HashSet<>();
         }
     }
@@ -747,7 +924,7 @@ public class PlayerConfigManagerSafe {
             }
             return nekoNames;
         } catch (Exception e) {
-            plugin.getLogger().warning("获取所有猫娘名时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "Failed to get all neko names: " + e.getMessage());
             return new HashSet<>();
         }
     }
@@ -762,7 +939,7 @@ public class PlayerConfigManagerSafe {
             Set<String> owners = nekoOwnersCache.get(normalizedName);
             return owners != null && !owners.isEmpty();
         } catch (Exception e) {
-            plugin.getLogger().warning("检查是否有主人时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "Failed to check if player has owner: " + e.getMessage());
             return false;
         }
     }
@@ -777,7 +954,7 @@ public class PlayerConfigManagerSafe {
             Set<String> owners = nekoOwnersCache.get(normalizedName);
             return owners != null ? new HashSet<>(owners) : new HashSet<>();
         } catch (Exception e) {
-            plugin.getLogger().warning("获取主人名列表时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "Failed to get owner names: " + e.getMessage());
             return new HashSet<>();
         }
     }
@@ -803,7 +980,7 @@ public class PlayerConfigManagerSafe {
             
             return requesters;
         } catch (Exception e) {
-            plugin.getLogger().warning("获取主人申请列表时发生异常: " + e.getMessage());
+            plugin.getLogger().warning(languageManager.getMessage("plugin.startup_error") + "Failed to get owner requests: " + e.getMessage());
             return new HashSet<>();
         }
     }
@@ -826,9 +1003,9 @@ public class PlayerConfigManagerSafe {
                     pstmt.executeUpdate();
                 }
                 return true;
-            }, "设置玩家通知状态失败")) {
+            }, "Failed to set player notice status")) {
                 // 数据库操作失败，数据仍保存在内存中
-                plugin.getLogger().info("通知状态已保存到内存");
+                plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
             }
         });
     }
@@ -841,19 +1018,22 @@ public class PlayerConfigManagerSafe {
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!safeDatabaseOperation(() -> {
-                String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko) VALUES (?, " +
-                        "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?);";
+                String sql = "INSERT OR REPLACE INTO player_configs (player_name, notice_enabled, is_neko, tail_pull_enabled) VALUES (?, " +
+                        "(SELECT notice_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)), ?, " +
+                        "(SELECT tail_pull_enabled FROM player_configs WHERE player_name = ? UNION SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM player_configs WHERE player_name = ?)));";
                 try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                     pstmt.setString(1, finalPlayerName);
                     pstmt.setString(2, finalPlayerName);
                     pstmt.setString(3, finalPlayerName);
                     pstmt.setInt(4, isNeko ? 1 : 0);
+                    pstmt.setString(5, finalPlayerName);
+                    pstmt.setString(6, finalPlayerName);
                     pstmt.executeUpdate();
                 }
                 return true;
-            }, "设置玩家猫娘状态失败")) {
+            }, "Failed to set player neko status")) {
                 // 数据库操作失败，数据仍保存在内存中
-                plugin.getLogger().info("猫娘状态已保存到内存");
+                plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
             }
         });
     }
@@ -882,9 +1062,9 @@ public class PlayerConfigManagerSafe {
                     pstmt.executeUpdate();
                 }
                 return true;
-            }, "添加主人关系失败")) {
+            }, "Failed to add owner relationship")) {
                 // 数据库操作失败，关系仍保存在内存中
-                plugin.getLogger().info("主人关系已保存到内存");
+                plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
             }
         });
     }
@@ -904,17 +1084,17 @@ public class PlayerConfigManagerSafe {
         // 异步执行数据库操作
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             if (!safeDatabaseOperation(() -> {
-                String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
-                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, finalNekoName);
-                    pstmt.setString(2, finalOwnerName);
-                    pstmt.executeUpdate();
+                    String sql = "DELETE FROM neko_owners WHERE neko_name = ? AND owner_name = ?";
+                    try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                        pstmt.setString(1, finalNekoName);
+                        pstmt.setString(2, finalOwnerName);
+                        pstmt.executeUpdate();
+                    }
+                    return true;
+                }, "移除主人关系失败")) {
+                    // 数据库操作失败，关系仍从内存中移除
+                    plugin.getLogger().info(languageManager.getMessage("database.operation_failed"));
                 }
-                return true;
-            }, "移除主人关系失败")) {
-                // 数据库操作失败，关系仍从内存中移除
-                plugin.getLogger().info("主人关系已从内存中删除");
-            }
         });
     }
     

@@ -1,5 +1,6 @@
 package org.cneko.nekox.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.cneko.nekox.NekoX;
@@ -50,10 +51,9 @@ public class LanguageManager {
             
             // 加载配置的语言列表
             loadLanguages();
-            
-            plugin.getLogger().info("语言管理器初始化成功！默认语言: " + defaultLanguage);
         } catch (Exception e) {
-            plugin.getLogger().severe("语言管理器初始化失败，插件将以英文模式运行: " + e.getMessage());
+            // 使用Bukkit.getLogger()直接输出，避免依赖languageManager
+            Bukkit.getLogger().severe("§dNekoX §e>> Language manager initialization failed, plugin will run in English mode: " + e.getMessage());
             // 即使失败也要确保基础功能可用
             createFallbackLanguageConfig();
         }
@@ -71,6 +71,7 @@ public class LanguageManager {
             fallbackConfig.set("plugin.enabled", "NekoX plugin has been successfully enabled!");
             fallbackConfig.set("plugin.disabled", "NekoX plugin has been successfully disabled!");
             fallbackConfig.set("plugin.name", "NekoX");
+            fallbackConfig.set("plugin.disabled", "NekoX plugin has been successfully disabled!");
             
             // 命令消息
             fallbackConfig.set("commands.only_player", "Only players can use this command!");
@@ -89,9 +90,9 @@ public class LanguageManager {
             
             // 将后备配置添加到内存映射中
             languageFiles.put("English", fallbackConfig);
-            plugin.getLogger().info("后备语言配置已创建，插件将以基础英文模式运行");
+            plugin.getLogger().info("§dNekoX §e>> Fallback language config created, plugin will run in basic English mode");
         } catch (Exception e) {
-            plugin.getLogger().severe("创建后备语言配置失败: " + e.getMessage());
+            plugin.getLogger().severe("§dNekoX §e>> Failed to create fallback language config: " + e.getMessage());
         }
     }
     
@@ -108,17 +109,13 @@ public class LanguageManager {
     }
     
     private void loadDefaultLanguageFiles() {
-        // 创建默认的English语言文件
+        // 创建或更新默认的English语言文件
         File englishFile = new File(languagesDir, "English.yml");
-        if (!englishFile.exists()) {
-            createDefaultEnglishFile();
-        }
+        createDefaultEnglishFile();
         
-        // 创建默认的简体中文语言文件
+        // 创建或更新默认的简体中文语言文件
         File chineseFile = new File(languagesDir, "简体中文.yml");
-        if (!chineseFile.exists()) {
-            createDefaultChineseFile();
-        }
+        createDefaultChineseFile();
         
         // 无论文件是否存在，都加载默认语言文件到映射中
         loadLanguageFile("English");
@@ -132,26 +129,31 @@ public class LanguageManager {
                 FileConfiguration config = YamlConfiguration.loadConfiguration(languageFile);
                 languageFiles.put(language, config);
             } catch (Exception e) {
-                plugin.getLogger().severe("加载语言文件 " + language + " 时出错: " + e.getMessage());
+                plugin.getLogger().severe("§dNekoX §e>> Failed to load language file " + language + ": " + e.getMessage());
             }
         } else {
-            plugin.getLogger().warning("语言文件 " + language + ".yml 不存在，将无法使用该语言的翻译");
+            plugin.getLogger().warning("§dNekoX §e>> Language file " + language + ".yml not found, this language translation will be unavailable");
         }
     }
     
     private void createDefaultEnglishFile() {
         try {
             File englishFile = new File(languagesDir, "English.yml");
-            Files.createFile(englishFile.toPath());
-            FileConfiguration config = YamlConfiguration.loadConfiguration(englishFile);
+            FileConfiguration config;
+            
+            // 如果文件存在，加载现有配置；否则创建新文件
+            if (englishFile.exists()) {
+                config = YamlConfiguration.loadConfiguration(englishFile);
+            } else {
+                Files.createFile(englishFile.toPath());
+                config = YamlConfiguration.loadConfiguration(englishFile);
+            }
             
             // 英文配置
-            if (!config.contains("plugin.version")) {
-                config.set("plugin.version", "Version: 5.0-ProMax+++");
-                config.set("plugin.version_full", "5.0-ProMax+++");
-                config.set("plugin.author", "Shabby");
-                config.set("plugin.github", "https://github.com/Shabby-666/NekoX");
-            }
+            config.set("plugin.version", "Version: 5.2-ProMax+++");
+            config.set("plugin.version_full", "5.2-ProMax+++");
+            config.set("plugin.author", "Shabby");
+            config.set("plugin.github", "https://github.com/Shabby-666/NekoX");
             
             // 基本插件消息
             config.set("plugin.enabled", "NekoX plugin has been successfully enabled!");
@@ -208,8 +210,14 @@ public class LanguageManager {
             config.set("commands.attackboost.description", "Description: Slightly increased attack damage and knockback power");
             
             // 伤害调整功能消息
-            config.set("damage.adjustment.message", "Damage adjusted: %.1f → %.1f (Reason: %s, Multiplier: %.1f)");
+            config.set("damage.adjustment.message", "Damage adjustment: %.1f → %.1f (Reason: %s, Multiplier: %.1f)");
             config.set("damage.adjustment.fall_immunity", "You are immune to fall damage!");
+            
+            // Tail pull feature messages
+            config.set("tailpull.pull_message", "You pulled {target}'s tail");
+            config.set("tailpull.pull_message_target", "{player} pulled your tail");
+            config.set("tailpull.command.toggle_enabled", "Tail pull feature enabled");
+            config.set("tailpull.command.toggle_disabled", "Tail pull feature disabled");
             config.set("damage.adjustment.other_damage_boost", "You take more damage from other sources!");
             
             // 生物驱赶功能消息
@@ -253,9 +261,73 @@ public class LanguageManager {
             config.set("commands.help.nekoset", "/nekoset <player> <true/false> - Set player's neko status (requires admin permission)");
             config.set("commands.help.nekox_language", "/nekox language <language> - Change plugin language");
             config.set("commands.help.nekox_placeholders", "/nekox placeholders - View placeholder list");
+            config.set("commands.help.pullthetail", "/pullthetail - Toggle tail pull feature");
             
             // 命令消息
             config.set("commands.only_player", "Only players can use this command!");
+            
+            // 启动信息
+            config.set("plugin.starting", "Enabling NekoX......");
+            config.set("plugin.enabled", "NekoX plugin has been successfully enabled! Meow~♪");
+            config.set("plugin.star_prompt", "If you like it, please give a Star qwq");
+            config.set("plugin.github", "Github: https://github.com/Shabby-666/NekoX");
+            config.set("plugin.startup_error", "A serious error occurred during plugin startup: ");
+            config.set("plugin.components_failed", "Plugin core components initialization failed, plugin will be disabled");
+            config.set("plugin.config_loaded", "Configuration file loaded successfully");
+            config.set("plugin.api_initialized", "API initialized successfully");
+            config.set("plugin.api_failed", "API initialization failed, but plugin will continue to run: ");
+            config.set("plugin.listeners_registered", "Event listeners registered successfully");
+            config.set("plugin.listeners_failed", "Event listeners registration failed: ");
+            config.set("plugin.commands_registered", "Commands registered successfully");
+            config.set("plugin.commands_failed", "Commands registration failed: ");
+            config.set("plugin.stats_initialized", "Statistics initialized successfully");
+            config.set("plugin.stats_failed", "Statistics initialization failed: ");
+            config.set("plugin.placeholder_failed", "PlaceholderAPI registration failed: ");
+            config.set("plugin.placeholder_registering", "Registering placeholders......");
+            config.set("plugin.placeholder_enabled", "PlaceholderAPI support enabled!");
+            config.set("plugin.placeholder_registered", "Placeholders registered successfully! Use /nekox placeholders to view the list of placeholders");
+            config.set("plugin.placeholder_error", "An exception occurred while registering PlaceholderAPI expansion: ");
+            config.set("plugin.placeholder_not_installed", "PlaceholderAPI is not installed, placeholder features will be unavailable.");
+            config.set("plugin.init_players_config", "Initializing player configuration manager...");
+            config.set("plugin.players_config_done", "Player configuration manager initialized successfully");
+            config.set("plugin.init_language", "Initializing language manager...");
+            config.set("plugin.language_done", "Language manager initialized successfully");
+            config.set("plugin.init_skills", "Initializing skill manager...");
+            config.set("plugin.skills_done", "Skill manager initialized successfully");
+            config.set("plugin.init_neko", "Initializing neko manager...");
+            config.set("plugin.neko_done", "Neko manager initialized successfully");
+            config.set("plugin.init_component_error", "Error occurred during component initialization: ");
+            config.set("plugin.init_unexpected_error", "Unexpected error occurred during component initialization: ");
+            
+            // 数据库相关消息
+            config.set("database.sqlite_driver_loaded", "SQLite JDBC driver loaded successfully");
+            config.set("database.sqlite_driver_not_found", "SQLite JDBC driver not found! Please make sure sqlite-jdbc dependency is added");
+            config.set("database.creating_data_folder", "Creating plugin data folder: %path%");
+            config.set("database.file_path", "Database file path: %path%");
+            config.set("database.file_not_writable", "Database file is not writable: %path%");
+            config.set("database.connecting", "Attempting to connect to database: %url%");
+            config.set("database.connected", "Database connection successful!");
+            config.set("database.foreign_keys_enabled", "Foreign key constraints enabled");
+            config.set("database.table_created", "Created/verified %table% table");
+            config.set("database.initialized", "Database initialization completed");
+            config.set("database.connection_failed", "Database connection failed: Connection object is null or closed");
+            config.set("database.sql_error", "Database SQL error: ");
+            config.set("database.error_code", "Error code: %code%");
+            config.set("database.sql_state", "SQL state: %state%");
+            config.set("database.init_exception", "Database initialization exception: %exception%: %message%");
+            config.set("database.column_added", "Added missing column: %column%");
+            config.set("database.table_check_error", "Error checking or fixing table structure: %message%");
+            config.set("database.memory_mode_initialized", "Initialized memory mode, player data will be lost after plugin restart");
+            config.set("database.skip_loading", "Memory mode or database unavailable, skipping loading configuration");
+            config.set("database.loaded_configs", "Loaded %count% player configurations");
+            config.set("database.loaded_owner_relations", "Loaded %count% owner relationships");
+            config.set("database.loaded_requests", "Loaded %count% owner requests");
+            config.set("database.connection_closed", "Database connection closed");
+            config.set("database.close_failed", "Failed to close database connection: %message%");
+            config.set("database.operation_failed", "Database operation failed, data saved to memory");
+            config.set("database.connection_failed_memory", "Database connection failed, running in memory mode");
+            config.set("database.init_manager_failed", "Failed to initialize player configuration manager: ");
+            config.set("database.using_memory_mode", "Running in memory mode");
             
             // Owner command help
             config.set("commands.help.owner", "Owner Commands: /owner <add/accept/deny/remove/list/mylist/forceadd> [player]");
@@ -312,7 +384,7 @@ public class LanguageManager {
             config.set("commands.playernotice.disabled_success", "Player notice has been disabled");
             config.set("commands.playernotice.usage", "Usage: /playernotice [on|off]");
             
-            // Player notice title messages
+            // Player notice messages
             config.set("player_notice.title", "Nearby Players");
             
             // 爬墙命令消息
@@ -328,8 +400,15 @@ public class LanguageManager {
     private void createDefaultChineseFile() {
         try {
             File chineseFile = new File(languagesDir, "简体中文.yml");
-            Files.createFile(chineseFile.toPath());
-            FileConfiguration config = YamlConfiguration.loadConfiguration(chineseFile);
+            FileConfiguration config;
+            
+            // 如果文件存在，加载现有配置；否则创建新文件
+            if (chineseFile.exists()) {
+                config = YamlConfiguration.loadConfiguration(chineseFile);
+            } else {
+                Files.createFile(chineseFile.toPath());
+                config = YamlConfiguration.loadConfiguration(chineseFile);
+            }
             
             // 基本插件消息
             config.set("plugin.enabled", "NekoX插件已成功启用！");
@@ -339,6 +418,8 @@ public class LanguageManager {
             config.set("plugin.help_info", "输入 /nekoxhelp 查看帮助");
             config.set("plugin.original_authors", "原作者");
             config.set("plugin.version_label", "版本");
+            config.set("plugin.version_full", "5.2-ProMax+++");
+            config.set("plugin.version", "版本: 5.2-ProMax+++");
             config.set("commands.nekox.reloaded", "NekoX配置已重新加载！");
             config.set("commands.language.current", "当前语言: %language%");
             config.set("commands.language.available", "可用语言: %languages%");
@@ -388,6 +469,12 @@ public class LanguageManager {
             // 伤害调整功能消息
             config.set("damage.adjustment.message", "伤害调整：%.1f → %.1f (原因：%s, 倍数：%.1f)");
             config.set("damage.adjustment.fall_immunity", "你免疫了跌落伤害！");
+            
+            // 尾巴拉扯功能消息
+            config.set("tailpull.pull_message", "你薅了一下{target}的尾巴");
+            config.set("tailpull.pull_message_target", "{player}薅了一下你的尾巴");
+            config.set("tailpull.command.toggle_enabled", "尾巴拉扯功能已开启");
+            config.set("tailpull.command.toggle_disabled", "尾巴拉扯功能已关闭");
             config.set("damage.adjustment.other_damage_boost", "你受到了更多其他来源的伤害！");
             
             // 生物驱赶功能消息
@@ -431,6 +518,7 @@ public class LanguageManager {
             config.set("commands.help.nekoset", "/nekoset <玩家> <true/false> - 设置玩家的猫娘状态(需要管理员权限)");
             config.set("commands.help.nekox_language", "/nekox language <语言> - 更改插件语言");
             config.set("commands.help.nekox_placeholders", "/nekox placeholders - 查看占位符列表");
+            config.set("commands.help.pullthetail", "/pullthetail - 开关尾巴拉扯功能");
             
             // 通用命令消息
             config.set("commands.only_player", "只有玩家才能使用此命令！");
@@ -496,6 +584,69 @@ public class LanguageManager {
             // 爬墙命令消息
             config.set("commands.climb.enabled", "爬墙功能已开启！");
             config.set("commands.climb.disabled", "爬墙功能已关闭！");
+            
+            // 启动信息
+            config.set("plugin.starting", "正在启用NekoX......");
+            config.set("plugin.enabled", "NekoX插件已成功启用！喵~♪");
+            config.set("plugin.star_prompt", "喜欢的话请给个Star吧qwq");
+            config.set("plugin.github", "Github: https://github.com/Shabby-666/NekoX");
+            config.set("plugin.startup_error", "插件启动过程中发生严重错误: ");
+            config.set("plugin.components_failed", "插件核心组件初始化失败，插件将禁用");
+            config.set("plugin.config_loaded", "配置文件加载完成");
+            config.set("plugin.api_initialized", "API初始化完成");
+            config.set("plugin.api_failed", "API初始化失败，但插件将继续运行: ");
+            config.set("plugin.listeners_registered", "事件监听器注册完成");
+            config.set("plugin.listeners_failed", "事件监听器注册失败: ");
+            config.set("plugin.commands_registered", "命令注册完成");
+            config.set("plugin.commands_failed", "命令注册失败: ");
+            config.set("plugin.stats_initialized", "统计初始化完成");
+            config.set("plugin.stats_failed", "统计初始化失败: ");
+            config.set("plugin.placeholder_failed", "PlaceholderAPI注册失败: ");
+            config.set("plugin.placeholder_registering", "正在注册占位符......");
+            config.set("plugin.placeholder_enabled", "PlaceholderAPI支持已启用！");
+            config.set("plugin.placeholder_registered", "占位符注册成功！使用/nekox placeholders查看占位符列表");
+            config.set("plugin.placeholder_error", "注册PlaceholderAPI扩展时发生异常: ");
+            config.set("plugin.placeholder_not_installed", "PlaceholderAPI未安装，占位符功能将不可用。");
+            config.set("plugin.init_players_config", "正在初始化玩家配置管理器...");
+            config.set("plugin.players_config_done", "玩家配置管理器初始化完成");
+            config.set("plugin.init_language", "正在初始化语言管理器...");
+            config.set("plugin.language_done", "语言管理器初始化完成");
+            config.set("plugin.init_skills", "正在初始化技能管理器...");
+            config.set("plugin.skills_done", "技能管理器初始化完成");
+            config.set("plugin.init_neko", "正在初始化猫娘管理器...");
+            config.set("plugin.neko_done", "猫娘管理器初始化完成");
+            config.set("plugin.init_component_error", "组件初始化过程中发生错误: ");
+            config.set("plugin.init_unexpected_error", "组件初始化过程中发生未预期的错误: ");
+            
+            // 数据库相关消息
+            config.set("database.sqlite_driver_loaded", "SQLite JDBC驱动已加载");
+            config.set("database.sqlite_driver_not_found", "SQLite JDBC驱动未找到！请确保已添加sqlite-jdbc依赖");
+            config.set("database.creating_data_folder", "创建插件数据文件夹: %path%");
+            config.set("database.file_path", "数据库文件路径: %path%");
+            config.set("database.file_not_writable", "数据库文件不可写: %path%");
+            config.set("database.connecting", "尝试连接数据库: %url%");
+            config.set("database.connected", "数据库连接成功！");
+            config.set("database.foreign_keys_enabled", "启用外键约束");
+            config.set("database.table_created", "创建/验证 %table% 表");
+            config.set("database.initialized", "数据库初始化完成");
+            config.set("database.connection_failed", "数据库连接失败：连接对象为null或已关闭");
+            config.set("database.sql_error", "数据库SQL错误: ");
+            config.set("database.error_code", "错误代码: %code%");
+            config.set("database.sql_state", "SQL状态: %state%");
+            config.set("database.init_exception", "数据库初始化异常: %exception%: %message%");
+            config.set("database.column_added", "已添加缺失的列: %column%");
+            config.set("database.table_check_error", "检查或修复表结构时出错: %message%");
+            config.set("database.memory_mode_initialized", "初始化内存模式，玩家数据将在插件重启后丢失");
+            config.set("database.skip_loading", "内存模式或数据库不可用，跳过加载配置");
+            config.set("database.loaded_configs", "加载了 %count% 个玩家配置");
+            config.set("database.loaded_owner_relations", "加载了 %count% 个主人关系");
+            config.set("database.loaded_requests", "加载了 %count% 个主人申请");
+            config.set("database.connection_closed", "数据库连接已关闭");
+            config.set("database.close_failed", "关闭数据库连接失败: %message%");
+            config.set("database.operation_failed", "数据库操作失败，数据已保存到内存");
+            config.set("database.connection_failed_memory", "数据库连接失败，将使用内存模式运行");
+            config.set("database.init_manager_failed", "初始化玩家配置管理器失败: ");
+            config.set("database.using_memory_mode", "将使用内存模式运行");
             
             config.save(chineseFile);
         } catch (IOException e) {
@@ -563,7 +714,29 @@ public class LanguageManager {
         }
         
         String message = config.getString(key);
-        return message != null ? replacePlaceholders(message, placeholders) : key;
+        String result = message != null ? replacePlaceholders(message, placeholders) : key;
+        // 为标题相关和版本相关的翻译键不添加前缀
+        if ("plugin.name".equals(key) || "plugin.version_label".equals(key) || "plugin.version_full".equals(key) || "plugin.version".equals(key) || "plugin.original_authors".equals(key) || "commands.help.title".equals(key) || "commands.help.interaction".equals(key) || "commands.help.effects".equals(key) || "commands.help.management".equals(key) || "commands.help.owner_system".equals(key) || "player_notice.title".equals(key)) {
+            return result; // 标题和版本相关的翻译键不添加前缀和颜色
+        }
+        // 在消息前添加前缀，除非是帮助信息或特殊格式的消息
+        if (!result.startsWith("=====") && !result.startsWith("Version: ") && !result.startsWith("版本: ") && !result.startsWith("§6=====") && !result.startsWith("§a=====") && !result.startsWith("§ePlaceholderAPI") && !result.startsWith("§cPlaceholderAPI") && !result.startsWith("§e成功注册的占位符") && !result.startsWith("§a所有占位符") && !result.startsWith("§e- %nekox_") && !result.startsWith("§c提示：")) {
+            result = "§dNekoX §e>> " + result;
+        } else {
+            // 为特殊格式的消息添加颜色代码
+            if (result.startsWith("=====")) {
+                result = "§6" + result; // 标题使用金色
+            } else if (result.startsWith("Version: ") || result.startsWith("版本: ")) {
+                result = "§e" + result; // 版本信息使用黄色
+            } else if (result.startsWith("You don't have permission") || result.startsWith("You are not a neko") || result.startsWith("Invalid language") || result.startsWith("Unknown command") || result.startsWith("你没有权限") || result.startsWith("你不是猫娘") || result.startsWith("无效的语言") || result.startsWith("未知的命令") || result.startsWith("NekoX插件语言系统未正确初始化") || result.startsWith("Player not found") || result.startsWith("玩家未找到") || result.startsWith("无效的参数")) {
+                result = "§c" + result; // 错误消息使用红色
+            } else if (result.startsWith("You gently petted") || result.startsWith("You gave") || result.startsWith("You scratched") || result.startsWith("You made") || result.startsWith("You hissed") || result.startsWith("You attracted") || result.startsWith("You gained") || result.startsWith("You used") || result.startsWith("Your neko") || result.startsWith("Skill is on cooldown") || result.startsWith("You need") || result.startsWith("You don't have") || result.startsWith("You pulled") || result.startsWith("Tail pull feature") || result.startsWith("You feel") || result.startsWith("You are immune") || result.startsWith("You take more") || result.startsWith("Creeper has been") || result.startsWith("Phantom has been") || result.startsWith("Your claws have") || result.startsWith("As a neko") || result.startsWith("Language has been changed") || result.startsWith("你温柔地抚摸了") || result.startsWith("你给了") || result.startsWith("你挠了挠") || result.startsWith("你发出了") || result.startsWith("你对着") || result.startsWith("你吸引了") || result.startsWith("你获得了") || result.startsWith("你使用了") || result.startsWith("你的猫娘") || result.startsWith("技能正在冷却中") || result.startsWith("你需要") || result.startsWith("你没有") || result.startsWith("你薅了一下") || result.startsWith("尾巴拉扯功能") || result.startsWith("你感受到了") || result.startsWith("你免疫了") || result.startsWith("你受到了更多") || result.startsWith("苦力怕被驱赶了") || result.startsWith("幻翼被驱赶了") || result.startsWith("你的爪子变得") || result.startsWith("作为猫娘") || result.startsWith("语言已更改为") || result.startsWith("NekoX配置已重新加载") || result.startsWith("插件已成功启用") || result.startsWith("插件已成功禁用")) {
+                result = "§e" + result; // 成功消息和状态消息使用黄色
+            } else if (result.startsWith("Current language") || result.startsWith("Available languages") || result.startsWith("Usage:") || result.startsWith("当前语言") || result.startsWith("可用语言") || result.startsWith("用法:") || result.startsWith("输入 /nekoxhelp 查看帮助")) {
+                result = "§a" + result; // 信息类消息使用绿色
+            }
+        }
+        return result;
     }
     
     public String replacePlaceholders(String message, Map<String, String> placeholders) {

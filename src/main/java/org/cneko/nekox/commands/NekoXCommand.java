@@ -36,18 +36,19 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             // 添加空值检查，确保消息不会返回null
             String pluginName = getSafeMessage("plugin.name", "NekoX");
-            String pluginVersion = getSafeMessage("plugin.version", "Version: 5.0-ProMax+++");
+            String pluginVersion = getSafeMessage("plugin.version", "Version: 5.2-ProMax+++");
             String chineseAuthor = getSafeMessage("plugin.chinese_author", "This modified version author: _Chinese_Player_");
             String helpInfo = getSafeMessage("plugin.help_info", "Type /nekoxhelp for help");
             String originalAuthors = getSafeMessage("plugin.original_authors", "Original Authors");
             
-            sender.sendMessage("§6===== " + pluginName + " =====");
-            sender.sendMessage("§e" + pluginVersion);
-            sender.sendMessage("§e" + chineseAuthor);
-            sender.sendMessage("§e" + helpInfo);
-            sender.sendMessage("§e===== " + originalAuthors + " =====");
-            sender.sendMessage("§eToNeko：https://modrinth.com/user/CrystalNeko");
-            sender.sendMessage("§eNekoC：https://modrinth.com/user/Kurumi78");
+            // 为所有消息添加统一格式
+            sender.sendMessage("§dNekoX §e>> §6===== " + pluginName + " =====");
+            sender.sendMessage("§dNekoX §e>> §e" + pluginVersion);
+            sender.sendMessage(chineseAuthor);
+            sender.sendMessage(helpInfo);
+            sender.sendMessage("§dNekoX §e>> §6===== " + originalAuthors + " =====");
+            sender.sendMessage("§dNekoX §e>> ToNeko：https://modrinth.com/user/CrystalNeko");
+            sender.sendMessage("§dNekoX §e>> NekoC：https://modrinth.com/user/Kurumi78");
             return true;
         }
         
@@ -59,18 +60,19 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
             case "reload":
             case "r":
                 if (!sender.hasPermission("nekox.admin")) {
-                    sender.sendMessage("§c" + getSafeMessage("commands.no_permission", "You don't have permission to execute this command!"));
+                    sender.sendMessage(getSafeMessage("commands.no_permission", "You don't have permission to execute this command!"));
                     return true;
                 }
                 plugin.reloadConfig();
-                sender.sendMessage("§e" + getSafeMessage("commands.nekox.reloaded", "NekoX configuration has been reloaded!"));
+                sender.sendMessage(getSafeMessage("commands.nekox.reloaded", "NekoX configuration has been reloaded!"));
                 break;
             case "version":
             case "v":
                 String name = getSafeMessage("plugin.name", "NekoX");
                 String versionLabel = getSafeMessage("plugin.version_label", "Version");
-                String versionFull = getSafeMessage("plugin.version_full", "5.0-ProMax+++");
-                sender.sendMessage("§6" + name + " " + versionLabel + " §e" + versionFull);
+                String versionFull = getSafeMessage("plugin.version_full", "5.2-ProMax+++");
+                // 为版本消息添加前缀
+                sender.sendMessage("§dNekoX §e>> §6" + name + " " + versionLabel + " §e" + versionFull);
                 break;
             case "language":
             case "lang":
@@ -80,7 +82,7 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
                 handlePlaceholdersCommand(sender);
                 break;
             default:
-                sender.sendMessage("§c" + getSafeMessage("commands.unknown", "Unknown command argument! Type /nekoxhelp for help"));
+                sender.sendMessage(getSafeMessage("commands.unknown", "Unknown command argument! Type /nekoxhelp for help"));
                 break;
         }
         
@@ -163,6 +165,8 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e" + getSafeMessage("commands.help.jumpboost", "/jumpboost [player] - Gain jump boost effect"));
         sender.sendMessage("§e" + getSafeMessage("commands.help.swiftsneak", "/swiftsneak [player] - Gain swift sneak effect"));
         sender.sendMessage("§e" + getSafeMessage("commands.help.health", "/health - Neko restores own and owner's health"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.climb", "/climb - Toggle climbing feature"));
+        sender.sendMessage("§e" + getSafeMessage("commands.help.pullthetail", "/pullthetail - Toggle tail pull feature"));
         sender.sendMessage("§e" + getSafeMessage("commands.help.nekox", "/nekox - View plugin information"));
         sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_reload", "/nekox reload - Reload configuration"));
         sender.sendMessage("§e" + getSafeMessage("commands.help.nekox_version", "/nekox version - View plugin version"));
@@ -184,24 +188,24 @@ public class NekoXCommand implements CommandExecutor, TabCompleter {
         int registeredPlaceholders = placeholderAPIInstalled ? totalPlaceholders : 0;
         
         // 发送占位符列表信息
-        sender.sendMessage("§6===== NekoX 占位符列表 ======");
+        sender.sendMessage("§dNekoX §e>> §6===== NekoX 占位符列表 ======");
         if (placeholderAPIInstalled) {
-            sender.sendMessage("§ePlaceholderAPI 已安装");
+            sender.sendMessage("§dNekoX §e>> §ePlaceholderAPI 已安装");
         } else {
-            sender.sendMessage("§cPlaceholderAPI 未安装");
+            sender.sendMessage("§dNekoX §e>> §cPlaceholderAPI 未安装");
         }
         
-        sender.sendMessage("§e成功注册的占位符：" + registeredPlaceholders + "/" + totalPlaceholders);
+        sender.sendMessage("§dNekoX §e>> §e成功注册的占位符：" + registeredPlaceholders + "/" + totalPlaceholders);
         
         // 显示所有占位符
-        sender.sendMessage("§a所有占位符：");
+        sender.sendMessage("§dNekoX §e>> §a所有占位符：");
         for (String placeholder : placeholders) {
             String status = placeholderAPIInstalled ? "§a✓" : "§c✗";
-            sender.sendMessage("§e- %nekox_" + placeholder + "% " + status);
+            sender.sendMessage("§dNekoX §e>> §e- %nekox_" + placeholder + "% " + status);
         }
         
         if (!placeholderAPIInstalled) {
-            sender.sendMessage("§c提示：安装PlaceholderAPI后可以使用这些占位符。");
+            sender.sendMessage("§dNekoX §e>> §c提示：安装PlaceholderAPI后可以使用这些占位符。");
         }
     }
     

@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.cneko.nekox.NekoX;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -18,10 +19,7 @@ public class PlayerProximityListener implements Listener {
     private final NekoX plugin;
     private final Map<UUID, BukkitTask> playerTasks = new HashMap<>();
     private static final int CHECK_RADIUS = 25;
-    private static final int CHECK_INTERVAL = 20; // 20 ticks = 1 second
-    private static final int TITLE_FADE_IN = 5; // 5 ticks
-    private static final int TITLE_STAY = 40; // 40 ticks
-    private static final int TITLE_FADE_OUT = 5; // 5 ticks
+    private static final int CHECK_INTERVAL = 10; // 10 ticks = 0.5 seconds，提高更新频率
 
     public PlayerProximityListener(NekoX plugin) {
         this.plugin = plugin;
@@ -137,11 +135,19 @@ public class PlayerProximityListener implements Listener {
 
                 if (hasNearbyPlayers) {
                             String title = plugin.getLanguageManager().getMessage("player_notice.title");
-                            String subtitle = noticeMessage.toString();
-                            // 确保在发送标题前玩家仍然在线
+                            // 为ActionBar消息添加颜色代码，使标题为金色，玩家列表为绿色
+                            String message = "§6" + title + " §e> §a" + noticeMessage.toString();
+                            // 确保在发送之前玩家仍然在线
                             if (nekoPlayer.isOnline()) {
-                                // 使用Bukkit原生的sendTitle方法，避免依赖Adventure API
-                                nekoPlayer.sendTitle(title, subtitle, TITLE_FADE_IN, TITLE_STAY, TITLE_FADE_OUT);
+                                // 使用Spigot API的sendActionBar方法，适配1.20.1+服务端
+                            try {
+                                // 直接使用Spigot API的sendActionBar方法，这是1.20.1+版本中最可靠的方式
+                                nekoPlayer.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                                    net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message));
+                            } catch (NoSuchMethodError | Exception e) {
+                                // 如果失败，记录异常信息
+                                plugin.getLogger().warning("ActionBar发送失败: " + e.getMessage());
+                            }
                             }
                         }
             });

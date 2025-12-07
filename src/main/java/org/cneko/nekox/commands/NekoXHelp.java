@@ -37,13 +37,15 @@ public class NekoXHelp implements CommandExecutor {
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.attention", "/attention <player> - Attract a player's attention"));
         
         // 效果命令
-        sender.sendMessage("§a===== " + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.effects", "Effect Commands") + " =====");
+        sender.sendMessage("§a===== " + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.effects", "Effect Commands") + " ======");
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.nightvision", "/nightvision [player] - Gain night vision effect"));
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.jumpboost", "/jumpboost [player] - Gain jump boost effect"));
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.swiftsneak", "/swiftsneak [player] - Gain swift sneak effect"));
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.health", "/health - Neko restores own and owner's health"));
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.myskills", "/myskills - View your neko skills"));
         sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.playernotice", "/playernotice - Toggle player proximity notices"));
+        sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.climb", "/climb - Toggle climbing feature"));
+        sender.sendMessage("§e" + SafeMessageUtils.getSafeMessage(languageManager, "commands.help.pullthetail", "/pullthetail - Toggle tail pull feature"));
         sender.sendMessage("§e/climb - " + SafeMessageUtils.getSafeMessage(languageManager, "commands.climb.enabled", "Climbing enabled").replace("!", ""));
         
         // 主人系统命令

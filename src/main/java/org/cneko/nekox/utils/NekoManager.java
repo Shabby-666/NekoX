@@ -33,6 +33,28 @@ public class NekoManager {
     }
     
     /**
+     * 设置玩家的尾巴拉扯功能开关状态
+     */
+    public void setTailPullEnabled(Player player, boolean enabled) {
+        if (player == null) {
+            return;
+        }
+        
+        configManager.setTailPullEnabled(player, enabled);
+    }
+    
+    /**
+     * 检查玩家的尾巴拉扯功能是否开启
+     */
+    public boolean isTailPullEnabled(Player player) {
+        if (player == null) {
+            return true; // 默认开启
+        }
+        
+        return configManager.isTailPullEnabled(player);
+    }
+    
+    /**
      * 设置玩家为猫娘（通过玩家名）
      */
     public void setNekoByName(String playerName, boolean isNeko) {

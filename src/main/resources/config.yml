@@ -151,3 +151,10 @@ neko-climbing:
   enabled: true
   # 调试模式，显示爬墙信息
   debug: false
+
+# 尾巴拉扯功能设置
+tail-pull:
+  # 是否启用尾巴拉扯功能
+  enabled: true
+  # 拉扯尾巴时的提示消息
+  pull-message: "你薅了一下{target}的尾巴"

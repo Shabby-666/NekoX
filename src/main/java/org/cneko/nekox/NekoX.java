@@ -21,6 +21,7 @@ import org.cneko.nekox.commands.OwnerCommand;
 import org.cneko.nekox.commands.Pat;
 import org.cneko.nekox.commands.PlayerNoticeCommand;
 import org.cneko.nekox.commands.Climb;
+import org.cneko.nekox.commands.PullTheTailCommand;
 import org.cneko.nekox.commands.Purr;
 import org.cneko.nekox.commands.Scratch;
 import org.cneko.nekox.commands.SwiftSneak;
@@ -35,9 +36,10 @@ import org.cneko.nekox.events.StressEffectListener;
 import org.cneko.nekox.events.PassiveAttackBoost;
 import org.cneko.nekox.events.NekoDamageListener;
 import org.cneko.nekox.events.NekoMobBehaviorListener;
-import org.cneko.nekox.events.NekoClimbingListener;
+
 import org.cneko.nekox.events.ClimbListener;
 import org.cneko.nekox.events.PlayerProximityListener;
+import org.cneko.nekox.events.TailPullListener;
 import org.cneko.nekox.utils.NekoManager;
 import org.cneko.nekox.utils.SkillManager;
 import org.cneko.nekox.utils.LanguageManager;
@@ -67,7 +69,6 @@ public class NekoX extends JavaPlugin {
         try {
             // 加载配置
             saveDefaultConfig();
-            getLogger().info("配置文件加载完成");
             
             // 按顺序初始化核心组件，确保每个组件都成功初始化
             if (!initializeComponents()) {
@@ -76,47 +77,50 @@ public class NekoX extends JavaPlugin {
                 return;
             }
             
+            // 配置已加载，使用languageManager发送消息
+            getLogger().info(languageManager.getMessage("plugin.config_loaded"));
+            
             // 初始化API
             try {
                 NekoXAPI.initialize(this);
-                getLogger().info("API初始化完成");
+                getLogger().info(languageManager.getMessage("plugin.api_initialized"));
             } catch (Exception e) {
-                getLogger().warning("API初始化失败，但插件将继续运行: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.api_failed") + e.getMessage());
             }
             
             // 注册事件监听器
             try {
                 registerEvents();
-                getLogger().info("事件监听器注册完成");
+                getLogger().info(languageManager.getMessage("plugin.listeners_registered"));
             } catch (Exception e) {
-                getLogger().warning("事件监听器注册失败: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.listeners_failed") + e.getMessage());
             }
             
             // 注册命令
             try {
                 registerCommands();
-                getLogger().info("命令注册完成");
+                getLogger().info(languageManager.getMessage("plugin.commands_registered"));
             } catch (Exception e) {
-                getLogger().warning("命令注册失败: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.commands_failed") + e.getMessage());
             }
             
             // 初始化统计
             try {
                 initStats();
-                getLogger().info("统计初始化完成");
+                getLogger().info(languageManager.getMessage("plugin.stats_initialized"));
             } catch (Exception e) {
-                getLogger().warning("统计初始化失败: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.stats_failed") + e.getMessage());
             }
             
             // 注册PlaceholderAPI扩展
             try {
                 registerPlaceholderAPI();
             } catch (Exception e) {
-                getLogger().warning("PlaceholderAPI注册失败: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.placeholder_failed") + e.getMessage());
             }
             
             // 显示欢迎信息
-            getLogger().info("正在启用NekoX......");
+            getLogger().info(languageManager.getMessage("plugin.starting"));
             getLogger().info("");
             getLogger().info("███╗   ██╗ ███████╗ ██╗  ██╗  ██████╗  ██╗  ██╗");
             getLogger().info("████╗  ██║ ██╔════╝ ██║ ██╔╝ ██╔═══██╗ ╚██╗██╔╝");
@@ -124,12 +128,13 @@ public class NekoX extends JavaPlugin {
             getLogger().info("██║╚██╗██║ ██╔══╝   ██╔═██╗  ██║   ██║  ██╔██╗ ");
             getLogger().info("██║ ╚████║ ███████╗ ██║  ██╗ ╚██████╔╝ ██╔╝ ██╗");
             getLogger().info("╚═╝  ╚═══╝ ╚══════╝ ╚═╝  ╚═╝  ╚═════╝  ╚═╝  ╚═╝");
-            getLogger().info("NekoX插件已成功启用！喵~♪");
-            getLogger().info("喜欢的话请给个Star吧qwq");
-            getLogger().info("Github: https://github.com/Shabby-666/NekoX");
+            getLogger().info(languageManager.getMessage("plugin.enabled"));
+            getLogger().info(languageManager.getMessage("plugin.star_prompt"));
+            getLogger().info(languageManager.getMessage("plugin.github"));
             
         } catch (Exception e) {
-            getLogger().severe("插件启动过程中发生严重错误: " + e.getMessage());
+            // 现在可以安全使用languageManager，因为它已经在initializeComponents()最开始初始化了
+            getLogger().severe(languageManager.getMessage("plugin.startup_error") + e.getMessage());
             e.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
         }
@@ -139,49 +144,55 @@ public class NekoX extends JavaPlugin {
      * 按安全顺序初始化所有核心组件
      */
     private boolean initializeComponents() {
+        // 首先单独初始化语言管理器，确保它优先于其他组件
         try {
-            // 第一步：初始化玩家配置管理器（依赖：无）
-            getLogger().info("正在初始化玩家配置管理器...");
-            playerConfigManager = new PlayerConfigManagerSafe(this);
-            if (playerConfigManager == null) {
-                getLogger().severe("玩家配置管理器初始化失败");
-                return false;
-            }
-            getLogger().info("玩家配置管理器初始化完成");
-            
-            // 第二步：初始化语言管理器（依赖：无）
-            getLogger().info("正在初始化语言管理器...");
+            // 直接初始化语言管理器，不使用硬编码消息
             languageManager = new LanguageManager(this);
-            if (languageManager == null) {
-                getLogger().severe("语言管理器初始化失败");
-                return false;
-            }
-            getLogger().info("语言管理器初始化完成");
-            
-            // 第三步：初始化技能管理器（依赖：无）
-            getLogger().info("正在初始化技能管理器...");
-            skillManager = new SkillManager(this);
-            if (skillManager == null) {
-                getLogger().severe("技能管理器初始化失败");
-                return false;
-            }
-            getLogger().info("技能管理器初始化完成");
-            
-            // 第四步：初始化猫娘管理器（依赖：PlayerConfigManager）
-            getLogger().info("正在初始化猫娘管理器...");
-            nekoManager = new NekoManager(this);
-            if (nekoManager == null) {
-                getLogger().severe("猫娘管理器初始化失败");
+            // 语言管理器初始化完成后，使用一致的前缀格式
+            getLogger().info(languageManager.getMessage("plugin.language_done"));
+        } catch (Exception e) {
+            // 使用Bukkit.getLogger()直接输出，避免依赖languageManager
+            Bukkit.getLogger().severe("§dNekoX §e>> Language manager initialization failed: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+        
+        try {
+            // 第一步：初始化玩家配置管理器（依赖：LanguageManager）
+            try {
+                getLogger().info(languageManager.getMessage("plugin.init_players_config"));
+                playerConfigManager = new PlayerConfigManagerSafe(this);
+                getLogger().info(languageManager.getMessage("plugin.players_config_done"));
+            } catch (Exception e) {
+                getLogger().severe(languageManager.getMessage("plugin.startup_error") + "玩家配置管理器初始化失败: " + e.getMessage());
                 return false;
             }
             
-            // 猫娘管理器初始化完成
-            getLogger().info("猫娘管理器初始化完成");
+            // 第二步：初始化技能管理器（依赖：无）
+            try {
+                getLogger().info(languageManager.getMessage("plugin.init_skills"));
+                skillManager = new SkillManager(this);
+                getLogger().info(languageManager.getMessage("plugin.skills_done"));
+            } catch (Exception e) {
+                getLogger().severe(languageManager.getMessage("plugin.startup_error") + "技能管理器初始化失败: " + e.getMessage());
+                return false;
+            }
+            
+            // 第三步：初始化猫娘管理器（依赖：PlayerConfigManager）
+            try {
+                getLogger().info(languageManager.getMessage("plugin.init_neko"));
+                nekoManager = new NekoManager(this);
+                getLogger().info(languageManager.getMessage("plugin.neko_done"));
+            } catch (Exception e) {
+                getLogger().severe(languageManager.getMessage("plugin.startup_error") + "猫娘管理器初始化失败: " + e.getMessage());
+                return false;
+            }
             
             return true;
             
         } catch (Exception e) {
-            getLogger().severe("组件初始化过程中发生错误: " + e.getMessage());
+            // 现在可以安全使用languageManager，因为它已经在前面初始化了
+            getLogger().severe(languageManager.getMessage("plugin.init_unexpected_error") + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -207,7 +218,7 @@ public class NekoX extends JavaPlugin {
             try {
                 nightEffectsListener.cancelTask();
             } catch (Exception e) {
-                getLogger().warning("取消夜间效果任务时发生异常: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.startup_error") + "取消夜间效果任务时发生异常: " + e.getMessage());
             }
         }
         
@@ -216,7 +227,8 @@ public class NekoX extends JavaPlugin {
             playerConfigManager.close();
         }
         
-        getLogger().info("NekoX插件已成功禁用！再见~♪");
+        // 使用统一的语言管理器获取关闭消息
+        getLogger().info(languageManager.getMessage("plugin.disabled"));
     }
     
     private void registerEvents() {
@@ -236,6 +248,7 @@ public class NekoX extends JavaPlugin {
         registeredListeners.add(new PassiveAttackBoost(this));
         registeredListeners.add(new PlayerProximityListener(this));
         registeredListeners.add(new StressEffectListener(this));
+        registeredListeners.add(new TailPullListener(this));
         
         // 获取nightEffectsListener引用以便在disable时取消任务
         for (Object listener : registeredListeners) {
@@ -269,6 +282,7 @@ public class NekoX extends JavaPlugin {
         MySkillsCommand mySkillsCommand = new MySkillsCommand(this);
         PlayerNoticeCommand playerNoticeCommand = new PlayerNoticeCommand(this);
         climbCommand = new Climb(this); // 初始化爬墙命令
+        PullTheTailCommand pullTheTailCommand = new PullTheTailCommand(this);
         
         getCommand("pat").setExecutor(pat);
         getCommand("lovebite").setExecutor(lovebite);
@@ -289,6 +303,7 @@ public class NekoX extends JavaPlugin {
         getCommand("myskills").setExecutor(mySkillsCommand);
         getCommand("playernotice").setExecutor(playerNoticeCommand);
         getCommand("climb").setExecutor(climbCommand);
+        getCommand("pullthetail").setExecutor(pullTheTailCommand);
         
         // 保存命令引用
         registeredCommands.add(pat);
@@ -308,6 +323,7 @@ public class NekoX extends JavaPlugin {
         registeredCommands.add(healthCommand);
         registeredCommands.add(mySkillsCommand);
         registeredCommands.add(playerNoticeCommand);
+        registeredCommands.add(pullTheTailCommand);
         registeredCommands.add(climbCommand); // 添加爬墙命令到注册列表
     }
     
@@ -332,6 +348,7 @@ public class NekoX extends JavaPlugin {
         getCommand("myskills").setExecutor(null);
         getCommand("playernotice").setExecutor(null);
         getCommand("climb").setExecutor(null); // 注销爬墙命令
+        getCommand("pullthetail").setExecutor(null); // 注销薅尾巴命令
     }
     
     private void initStats() {
@@ -347,22 +364,22 @@ public class NekoX extends JavaPlugin {
         // 检查PlaceholderAPI是否已安装
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             // 输出正在注册占位符的日志
-            getLogger().info("正在注册占位符......");
+            getLogger().info(languageManager.getMessage("plugin.placeholder_registering"));
             try {
                 // 创建并注册占位符扩展
                 NekoXPlaceholderExpansion expansion = new NekoXPlaceholderExpansion(this);
                 boolean registered = expansion.register();
                 if (registered) {
-                    getLogger().info("PlaceholderAPI支持已启用！");
-                    getLogger().info("占位符注册成功！使用/nekox placeholders查看占位符列表");
+                    getLogger().info(languageManager.getMessage("plugin.placeholder_enabled"));
+                    getLogger().info(languageManager.getMessage("plugin.placeholder_registered"));
                 } else {
-                    getLogger().warning("PlaceholderAPI扩展注册失败！");
+                    getLogger().warning(languageManager.getMessage("plugin.placeholder_failed"));
                 }
             } catch (Exception e) {
-                getLogger().warning("注册PlaceholderAPI扩展时发生异常: " + e.getMessage());
+                getLogger().warning(languageManager.getMessage("plugin.placeholder_error") + e.getMessage());
             }
         } else {
-            getLogger().info("PlaceholderAPI未安装，占位符功能将不可用。");
+            getLogger().info(languageManager.getMessage("plugin.placeholder_not_installed"));
         }
     }
     

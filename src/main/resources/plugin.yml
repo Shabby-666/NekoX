@@ -1,5 +1,5 @@
 name: NekoX
-version: 5.0-ProMax+++(Emergency-fix)
+version: 5.2-ProMax+++
 authors: [_Chinese_Player_]
 description: 一个融合了NekoC和toNeko功能的猫娘插件
 main: org.cneko.nekox.NekoX
@@ -78,6 +78,10 @@ commands:
     description: 开启/关闭爬墙功能（猫娘使用）
     usage: /<command>
     permission: nekox.climb
+  pullthetail:
+    description: 开启/关闭尾巴拉扯功能
+    usage: /<command>
+    permission: nekox.pullthetail
 
 permissions:
   nekox.pat:
@@ -109,6 +113,8 @@ permissions:
   nekox.playernotice:
     default: true
   nekox.climb:  # 添加爬墙权限
+    default: true
+  nekox.pullthetail:
     default: true
   nekox.admin:
     default: op
